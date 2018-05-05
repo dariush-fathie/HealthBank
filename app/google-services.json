@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "109307022327",
+    "firebase_url": "https://zhin-health-bank.firebaseio.com",
+    "project_id": "zhin-health-bank",
+    "storage_bucket": "zhin-health-bank.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109307022327:android:e48a987ed5c822f9",
+        "android_client_info": {
+          "package_name": "pro.ahoora.zhin.healthbank"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109307022327-8u1preuvi5mk4ssb68sk4a71nn9ac0ei.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pro.ahoora.zhin.healthbank",
+            "certificate_hash": "91a1bd31c3bb2367f951a6891c16aacf1719ffa4"
+          }
+        },
+        {
+          "client_id": "109307022327-n971bbps2u3e38167atbgebkdec8mds3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwx7842CtkOpGo-5RlUv7c8Ig-y2a0HxI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109307022327-n971bbps2u3e38167atbgebkdec8mds3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
