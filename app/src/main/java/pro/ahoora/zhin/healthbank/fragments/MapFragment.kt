@@ -30,13 +30,14 @@ import com.google.maps.model.DirectionsResult
 import com.google.maps.model.TravelMode
 import org.greenrobot.eventbus.EventBus
 import pro.ahoora.zhin.healthbank.R
+import pro.ahoora.zhin.healthbank.activitys.OfficeActivity
 import pro.ahoora.zhin.healthbank.adapters.HListAdapter
 import pro.ahoora.zhin.healthbank.customClasses.CustomBottomSheetBehavior
 import java.util.concurrent.TimeUnit
 
 class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onClick(v: View?) {
-        directionRequest()
+        // directionRequest()
         if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             ivToggle.rotation = 180f
@@ -51,14 +52,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     lateinit var bottomSheetLayout: ConstraintLayout
     lateinit var ivToggle: AppCompatImageView
+    lateinit var idArray: ArrayList<Int>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.fragment_map, container, false)
+        idArray = (activity as OfficeActivity).idArray
         initMap()
         initViews(v)
         return v
     }
-
 
     private fun initViews(v: View) {
         ivToggle = v.findViewById(R.id.iv_toggle)
@@ -70,8 +72,16 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             (bottomSheetBehavior as CustomBottomSheetBehavior).setAllowUserDragging(false)
         }
         mapList.layoutManager = LinearLayoutManager(activity as Context, LinearLayoutManager.HORIZONTAL, false)
-        mapList.adapter = HListAdapter(activity as Context)
-        LinearSnapHelper().attachToRecyclerView(mapList)
+        mapList.adapter = HListAdapter(activity as Context , idArray)
+        val snapHelper = LinearSnapHelper()
+        mapList.addOnScrollListener(object :RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val p = snapHelper.findTargetSnapPosition(recyclerView?.layoutManager , dx , dy)
+                Log.e("po", "$p" + " ")
+            }
+        })
+        snapHelper.attachToRecyclerView(mapList)
     }
 
     private fun initMap() {
@@ -103,7 +113,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
     private fun getGeoContext(): GeoApiContext {
         val geoApiContext = GeoApiContext.Builder()
-        geoApiContext.apiKey("AIzaSyC1vWjq5eQtlB5L5W7mZQKMeeaD7dQYpnE")
+        geoApiContext.apiKey("AIzaSyCwx7842CtkOpGo-5RlUv7c8Ig-y2a0HxI")
         geoApiContext.queryRateLimit(3)
         geoApiContext.connectTimeout(5, TimeUnit.SECONDS)
         geoApiContext.writeTimeout(5, TimeUnit.SECONDS)

@@ -43,9 +43,9 @@ class TFragment : Fragment(), View.OnClickListener {
 
 
     inner class TAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        val tArr = arrayOf("گوارش و کبد" , "پوست و مو" , "قلب و عروق" , "مغز و اعصاب", "بینایی" , "دندانپزشکی" , "عمومی", "جراح" , "داخلی" , "اطفال")
+        val tArr = arrayOf("گوارش و کبد", "پوست و مو", "قلب و عروق", "مغز و اعصاب", "بینایی", "دندانپزشکی", "عمومی", "جراح", "داخلی", "اطفال")
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            val v = LayoutInflater.from(activity).inflate(R.layout.t_list_item, parent , false)
+            val v = LayoutInflater.from(activity).inflate(R.layout.t_list_item, parent, false)
             return ItemHolder(v)
         }
 
@@ -54,14 +54,15 @@ class TFragment : Fragment(), View.OnClickListener {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            if (holder is ItemHolder){
+            if (holder is ItemHolder) {
                 holder.tTitle.text = tArr[position]
             }
         }
 
 
-        inner class ItemHolder(itemView:View) : RecyclerView.ViewHolder(itemView){
-            val tTitle:AppCompatTextView = itemView.findViewById(R.id.tv_t_title)
+        inner class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val tTitle: AppCompatTextView = itemView.findViewById(R.id.tv_t_title)
+
             init {
 
             }

@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.drawer_layout.*
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.models.GroupModel
 import pro.ahoora.zhin.healthbank.models.GroupModel_Realm
-import pro.ahoora.zhin.healthbank.models.RealmItemModel
 import pro.ahoora.zhin.healthbank.utils.ApiClient
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
 import pro.ahoora.zhin.healthbank.utils.StaticValues
@@ -239,7 +238,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 18 -> return R.drawable.ic_emmergency
                 19 -> return R.drawable.ic_eye
                 20 -> return R.drawable.ic_ear
-                21 -> return R.drawable.ic_sport
+                21 -> return R.drawable.ic_speak
                 22 -> return R.drawable.ic_kidney
                 23 -> return R.drawable.ic_atomic
                 24 -> return R.drawable.ic_galss

@@ -4,8 +4,8 @@
     package="pro.ahoora.zhin.healthbank">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -20,7 +20,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
+        android:supportsRtl="false"
         android:theme="@style/AppTheme">
         <activity android:name=".activitys.MainActivity">
             <intent-filter>
@@ -47,7 +47,8 @@
 
         <activity android:name=".activitys.FavActivity" />
         <activity android:name=".activitys.AboutUs" />
-        <activity android:name=".activitys.ContactUs"/>
+        <activity android:name=".activitys.ContactUs" />
+        <activity android:name=".activitys.DetailActivity"></activity>
     </application>
 
 </manifest>

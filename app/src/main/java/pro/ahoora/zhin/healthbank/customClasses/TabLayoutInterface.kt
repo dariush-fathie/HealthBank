@@ -12,15 +12,14 @@ import android.widget.LinearLayout
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.fragments.MapFragment
 import pro.ahoora.zhin.healthbank.fragments.SearchFragment
-import pro.ahoora.zhin.healthbank.fragments.TFragment
 
-class TabLayoutInterface(ctx: Context, fm: FragmentManager, behavior: BottomSheetBehavior<ConstraintLayout>, progressLayout: LinearLayout, flag: Boolean) : TabLayout.OnTabSelectedListener {
+class TabLayoutInterface(ctx: Context, fm: FragmentManager, behavior: BottomSheetBehavior<ConstraintLayout>, progressLayout: LinearLayout) : TabLayout.OnTabSelectedListener {
 
     val fragmentManager = fm
     val bottomSheetBehavior = behavior
     val progressLL = progressLayout
     val TAG = "TabLayoutInterface"
-    val f = flag
+
 
     override fun onTabSelected(tab: TabLayout.Tab) {
         Log.e(TAG, "${tab.position}")
@@ -53,21 +52,11 @@ class TabLayoutInterface(ctx: Context, fm: FragmentManager, behavior: BottomShee
     }
 
     private fun loadFragment(i: Int) {
-        if (f) {
-            when (i) {
-                0 -> fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, MapFragment()).commit()
-                1 -> fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, TFragment()).commit()
-                2 -> fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, SearchFragment()).commit()
-            }
+        if (i == 0) {
+            fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, MapFragment()).commit()
         } else {
-            if (i == 0) {
-                fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, MapFragment()).commit()
-            } else {
-                fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, SearchFragment()).commit()
-            }
+            fragmentManager.beginTransaction().replace(R.id.fl_sheetContainer, SearchFragment()).commit()
         }
-
-
     }
 
     fun showProgress() {
