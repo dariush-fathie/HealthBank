@@ -10,6 +10,8 @@ import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -23,6 +25,8 @@ import com.github.rahatarmanahmed.cpv.CircularProgressView;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
@@ -31,6 +35,7 @@ import pro.ahoora.zhin.healthbank.R;
 import pro.ahoora.zhin.healthbank.activitys.OfficeActivity;
 import pro.ahoora.zhin.healthbank.adapters.SearchAdapter;
 import pro.ahoora.zhin.healthbank.models.RealmItemModel;
+import pro.ahoora.zhin.healthbank.utils.SharedPer;
 
 public class SearchFragment extends Fragment implements View.OnClickListener {
 
@@ -41,6 +46,11 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
     private SearchAdapter adapter;
     private CircularProgressView progressView;
     private int groupId = 1;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -64,47 +74,61 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
         etSearch = view.findViewById(R.id.et_search);
         ivSearch = view.findViewById(R.id.iv_search);
         ivSearch.setOnClickListener(this);
-        etSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+        etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                search();
-                return true;
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                dataBaseSearch(editable.toString());
             }
         });
+
     }
 
     private void search() {
         if (!etSearch.getText().toString().equals("")) {
-            dataBaseSearch(etSearch.getText().toString());
+            dataBaseSearch(etSearch.getText().toString().trim());
         } else {
             Toast.makeText(getActivity(), "نام دکتر نباید خالی باشد", Toast.LENGTH_SHORT).show();
         }
-        dataBaseSearch(etSearch.getText().toString());
     }
 
     private void dataBaseSearch(String searchedText) {
-        closeKeyBoard();
         progressView.setVisibility(View.VISIBLE);
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
-        RealmResults<RealmItemModel> results = realm.where(RealmItemModel.class).equalTo("groupId", groupId)
-                .beginGroup()
-                .contains("firstName", searchedText)
-                .or()
-                .contains("lastName", searchedText)
-                .endGroup()
-                .findAll();
-        realm.commitTransaction();
-        if (results.size() != 0) {
-            List<RealmItemModel> list = results.subList(0, results.size() - 1);
-            initList(list);
+
+        RealmResults<RealmItemModel> result = realm.where(RealmItemModel.class).equalTo("groupId", groupId).findAll();
+        if (result.size() > 0) {
+            ArrayList<RealmItemModel> list1 = new ArrayList<>();
+            for (RealmItemModel item : result) {
+                if (item.getFirstName().contains(searchedText) || item.getLastName().contains(searchedText)) {
+                    list1.add(item);
+                }
+            }
+            if (list1.size() != 0) {
+                initList(list1);
+            } else {
+                tvItemNum.setText("موردی یافت نشد .");
+                rvSearch.setAdapter(null);
+            }
+            realm.commitTransaction();
         } else {
             tvItemNum.setText("موردی یافت نشد .");
             rvSearch.setAdapter(null);
         }
         progressView.setVisibility(View.GONE);
-    }
 
+    }
 
     private void closeKeyBoard() {
         try {
@@ -135,6 +159,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.iv_search:
                 search();
+                closeKeyBoard();
         }
     }
 }

@@ -8,6 +8,7 @@
     app:cardPreventCornerOverlap="false">
 
     <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/iv_imageBig"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="center"

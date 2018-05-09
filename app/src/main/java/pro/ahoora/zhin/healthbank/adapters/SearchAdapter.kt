@@ -11,11 +11,13 @@ import android.widget.RelativeLayout
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.DetailActivity
 import pro.ahoora.zhin.healthbank.models.RealmItemModel
+import pro.ahoora.zhin.healthbank.utils.SharedPer
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 
 class SearchAdapter(ctx: Context, data: List<RealmItemModel>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val context = ctx
     private val dataSet = data
+    private lateinit var shp: SharedPer
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.group_item, parent, false)
@@ -25,7 +27,7 @@ class SearchAdapter(ctx: Context, data: List<RealmItemModel>) : RecyclerView.Ada
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
         (holder as ItemHolder).title.text = dataSet.get(position).firstName + " " + dataSet.get(position).lastName
-        (holder as ItemHolder).subTitle.text = dataSet.get(position).specialtiesList[0]?.name
+        holder.subTitle.text = dataSet.get(position).specialtiesList[0]?.name
     }
 
     override fun getItemCount(): Int {

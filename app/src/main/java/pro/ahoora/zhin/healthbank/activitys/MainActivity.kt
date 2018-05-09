@@ -18,6 +18,8 @@ import kotlinx.android.synthetic.main.drawer_layout.*
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.models.GroupModel
 import pro.ahoora.zhin.healthbank.models.GroupModel_Realm
+import pro.ahoora.zhin.healthbank.models.RealSpecialties2
+import pro.ahoora.zhin.healthbank.models.Specialties2
 import pro.ahoora.zhin.healthbank.utils.ApiClient
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
 import pro.ahoora.zhin.healthbank.utils.StaticValues
@@ -90,10 +92,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        startActivity(Intent(this, SplashScreen::class.java))
         setContentView(R.layout.activity_main)
         setClickListeners()
         initList()
     }
+
+
 
     private fun setClickListeners() {
         rl_exit.setOnClickListener(this)
@@ -109,7 +114,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun initList() {
         if (Utils.isNetworkAvailable(this@MainActivity)) {
-            getGroupCount() // from server
+            getGroupCount()
+            getSpList()// from server
         } else {
             showNetErrLayout()
             Toast.makeText(this, "به اینترنت متصل نیستید", Toast.LENGTH_SHORT).show()
@@ -124,7 +130,33 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         ll_progressLayout.visibility = View.GONE
     }
 
-    lateinit var RESTResponse: Response<Callback<List<GroupModel>>>
+    private fun getSpList() {
+        val apiInterface = ApiClient.getClient().create(ApiInterface::class.java)
+        val response = apiInterface.spList
+        response.enqueue(object : Callback<List<Specialties2>> {
+            override fun onResponse(call: Call<List<Specialties2>>?, response: Response<List<Specialties2>>?) {
+                val list: List<Specialties2>? = response?.body()
+                val realmDatabase = Realm.getDefaultInstance()
+                try {
+                    realmDatabase.executeTransactionAsync { realm: Realm? ->
+                        realm?.where(RealSpecialties2::class.java)?.findAll()?.deleteAllFromRealm()
+                        list?.forEach { spl: Specialties2 ->
+                            val realSpecialties2 = realm?.createObject(RealSpecialties2::class.java)
+                            realSpecialties2?.id = spl.id
+                            realSpecialties2?.name = spl.name
+                        }
+                    }
+
+                } finally {
+                    realmDatabase.close()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Specialties2>>?, t: Throwable?) {
+                Log.e("ERR", t?.message + "  ")
+            }
+        })
+    }
 
     private fun getGroupCount() {
         showProgressLayout()
@@ -165,7 +197,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     val ERR = "ERROR>>"
-    val SUCCESS = "Successful"
     private fun loadAdapter(list: List<GroupModel>) {
         adapter = CategoryAdapter(list)
         rv_category.layoutManager = GridLayoutManager(this, 2)

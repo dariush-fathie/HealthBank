@@ -54,21 +54,25 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         if (intent != null) {
             groupId = intent.getIntExtra(StaticValues.CATEGORY, 0)
         }
-        val realm = Realm.getDefaultInstance()
-        realm.beginTransaction()
-        val name = realm.where(GroupModel_Realm::class.java).equalTo("id", groupId+1).findFirst()?.name
-        realm.commitTransaction()
-        tv_officeTitle.text = name
+
+        tv_officeTitle.text = getTitleFromDb()
         ctbl.addTab(ctbl.newTab().setText("روی نقشه").setIcon(R.drawable.ic_map))
         ctbl.addTab(ctbl.newTab().setText("کاوش").setIcon(R.drawable.ic_search))
         initBottomSheet()
         tabLayoutInterface = TabLayoutInterface(this, supportFragmentManager, bottomSheetBehavior, ll_progress)
         ctbl.addOnTabSelectedListener(tabLayoutInterface)
-
         getItems()
     }
 
-    private fun initListener(): Unit {
+    fun getTitleFromDb(): String {
+        val realm = Realm.getDefaultInstance()
+        realm.beginTransaction()
+        val name = realm.where(GroupModel_Realm::class.java).equalTo("id", groupId + 1).findFirst()?.name
+        realm.commitTransaction()
+        return name!!
+    }
+
+    private fun initListener(){
         rl_filter.setOnClickListener(this)
         rl_sort.setOnClickListener(this)
         iv_goback.setOnClickListener(this)
@@ -88,6 +92,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         ll_progressMain.visibility = View.VISIBLE
     }
 
+
     private fun getItems() {
         if (Utils.isNetworkAvailable(this)) {
             val apiInterface = ApiClient.getClient().create(ApiInterface::class.java)
@@ -95,9 +100,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
                 override fun onResponse(call: Call<List<ItemModel>>?, response: Response<List<ItemModel>>?) {
                     val list = response?.body()
                     Log.e("success", list.toString() + " res")
-
                     val realmDatabase = Realm.getDefaultInstance()
-
                     realmDatabase.executeTransactionAsync { realm: Realm? ->
                         realm?.where(RealmItemModel::class.java)?.findAll()?.deleteAllFromRealm()
                         list?.forEach { item: ItemModel ->
@@ -199,7 +202,6 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
                         }
 
                     }
-
                 }
 
                 override fun onFailure(call: Call<List<ItemModel>>?, t: Throwable?) {
@@ -278,7 +280,6 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         initList(idArray)
     }
 
-
     fun filter1(array: Array<Int>) {
         filterFlag = true
         tv_filter.setTextColor(ContextCompat.getColor(this, R.color.colorAccent))
@@ -293,6 +294,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         result.forEach { item: RealmItemModel ->
             list.add(item._id)
         }
+
         initList(list)
     }
 
@@ -310,6 +312,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         result.forEach { item: RealmItemModel ->
             list.add(item._id)
         }
+
         initList(list)
     }
 
@@ -325,7 +328,6 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var filterArray: Array<Int>
 
     private fun onFilterClick() {
-
         val filterView: View = LayoutInflater.from(this@OfficeActivity).inflate(R.layout.filter, null, false)
         val tList: RecyclerView = filterView.findViewById(R.id.rv_tList)
         val adapter: TAdapter = TAdapter(this@OfficeActivity)
@@ -384,7 +386,6 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         val alertDialog = builder.create()
         alertDialog.show()
     }
-
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(e: String) {

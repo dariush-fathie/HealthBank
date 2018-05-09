@@ -9,13 +9,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
+import pro.ahoora.zhin.healthbank.models.RealSpecialties2
 
 class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
     val idsArray = ArrayList<Int>()
     val context = ctx
-    val tArr = arrayOf("عمومی", "جراحی عمومی", "کودکان", "جراحی مغز و اعصاب", "قلب و عروق", "چشم", "گوش و حلق وبینی", "داخلی", "آزمایشگاه", "پوست", "ارولوژی", "زنان و زایمان", "غدد داخلی و متابولیسم کودکان", "نورولوژی - اعصاب", "روانپزشکی", "قلب اطفال", "بیماری های عفونی اطفال", "عفونی", "گوارش و کبد", "نوزدان", "ریه", "دندانپزشکی", "ارتوپدی", "توانبخشی", "غدد داخلی و متابولیسم", "نفرولوژی", "خون و سرطان", "ایمونولوژی - آلرژی", "مغز و اعصاب", "داروخانه", "سونوگرافی")
+    val tArr = ArrayList<String>()
+    val tIds = ArrayList<Int>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.t_list_item, parent, false)
         return ItemHolder(v)
@@ -23,6 +25,23 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return tArr.size
+    }
+
+    init {
+        fillBuffer()
+    }
+
+    private fun fillBuffer() {
+        tArr.clear()
+        val realm = Realm.getDefaultInstance()
+        realm.beginTransaction()
+        val result = realm.where(RealSpecialties2::class.java).findAll()
+        realm.commitTransaction()
+        result.forEach { item: RealSpecialties2 ->
+            tArr.add(item.name.toString())
+            tIds.add(item.id)
+        }
+
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -45,17 +64,17 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             var f = false
 
             idsArray.forEach { i: Int ->
-                if (i == adapterPosition + 1) {
+                if (i == tIds[adapterPosition]) {
                     f = true
                 }
             }
             if (!f) {
-                idsArray.add(adapterPosition + 1)
+                idsArray.add(tIds[adapterPosition])
                 cb.isChecked = true
 
             } else {
                 cb.isChecked = false
-                idsArray.remove(adapterPosition + 1)
+                idsArray.remove(tIds[adapterPosition])
             }
             idsArray.forEach { i: Int ->
                 Log.e("I", "$i")
@@ -69,8 +88,8 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         init {
             rl.setOnClickListener(this)
             cb.isClickable = false
+
         }
     }
-
 
 }

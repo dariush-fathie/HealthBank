@@ -16,15 +16,26 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@color/green">
-
-            <android.support.v7.widget.AppCompatImageView
-                android:id="@+id/iv_menu"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+            <RelativeLayout
                 android:layout_alignParentEnd="true"
-                android:padding="11dp"
-                android:src="@drawable/ic_menu"
-                app:tint="@color/white" />
+                android:layout_width="48dp"
+                android:layout_height="48dp">
+                <android.support.v7.widget.AppCompatImageView
+                    android:id="@+id/iv_menu"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_menu"
+                    app:tint="@color/white" />
+
+                <android.support.v7.widget.AppCompatImageView
+                    android:visibility="gone"
+                    android:layout_margin="11dp"
+                    android:id="@+id/iv_menu_badge"
+                    android:layout_width="5dp"
+                    android:layout_height="5dp"
+                    android:background="@drawable/red_circle"/>
+            </RelativeLayout>
 
             <android.support.v7.widget.AppCompatTextView
                 android:layout_width="wrap_content"

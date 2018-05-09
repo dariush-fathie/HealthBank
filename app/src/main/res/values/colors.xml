@@ -13,4 +13,5 @@
     <color name="subTitle">#9a9ea3</color>
     <color name="c1">#afb4b9</color>
     <color name="androidTextColor">#808080</color>
+    <color name="red">#ff0000</color>
 </resources>

@@ -2,121 +2,25 @@ package pro.ahoora.zhin.healthbank.activitys
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.CardView
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.PagerSnapHelper
-import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import com.bumptech.glide.Glide
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_detail.*
 import pro.ahoora.zhin.healthbank.R
-import pro.ahoora.zhin.healthbank.models.*
+import pro.ahoora.zhin.healthbank.models.RealmItemModel
+import pro.ahoora.zhin.healthbank.models.RealmItemModelSave
 import pro.ahoora.zhin.healthbank.utils.StaticValues
+import pro.ahoora.zhin.healthbank.utils.Utils
 
 class DetailActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
-        saveItem()
+        Utils.saveItem(this@DetailActivity,id)
     }
 
-
-    fun saveItem() {
-        val realm = Realm.getDefaultInstance()
-        realm.beginTransaction()
-        val item = realm.where(RealmItemModel::class.java).equalTo("_id", id).findFirst()
-        realm.where(RealmItemModelSave::class.java).equalTo("_id", id).findAll().deleteFirstFromRealm()
-        val newItem = realm.createObject(RealmItemModelSave::class.java, item?._id)
-        newItem.naCode = item?.naCode
-        newItem.system_num = item?.system_num!!
-        newItem.firstName = item.firstName
-        newItem.lastName = item.lastName
-        newItem.regDate = item.regDate
-        newItem.validDate = item.validDate
-        newItem.active = item.active
-        newItem.logoUrl = item.logoUrl
-        newItem.buildingUrl = item.buildingUrl
-        newItem.shortDesc = item.shortDesc
-        newItem.bio = item.bio
-        newItem.equipment = item.equipment
-        newItem.services = item.services
-        newItem.workTeam = item.workTeam
-        newItem.elc_rec = item.elc_rec
-        newItem.grade = item.grade
-        newItem.groupId = item.groupId
-        item.addressList?.forEach { itemA: RealmAddress ->
-            val realmAddress = realm?.createObject(RealmAddress::class.java)
-            realmAddress?.title = itemA.title
-            realmAddress?.id = itemA.id
-            realmAddress?.postalCode = itemA.postalCode
-            realmAddress?.tel1 = itemA.tel1
-            realmAddress?.tel1Desc = itemA.tel1Desc
-            realmAddress?.tel2 = itemA.tel2
-            realmAddress?.tel2Desc = itemA.tel2Desc
-            realmAddress?.mobile1 = itemA.mobile1
-            realmAddress?.mobile1Desc = itemA.mobile1Desc
-            realmAddress?.mobile2 = itemA.mobile2
-            realmAddress?.mobile2Desc = itemA.mobile2Desc
-            realmAddress?.genDesc = itemA.genDesc
-            realmAddress?.defaultAdd = itemA.defaultAdd
-            realmAddress?.lat = itemA.lat
-            realmAddress?.lng = itemA.lng
-            realmAddress?.site = itemA.site
-            realmAddress?.mail = itemA.mail
-            realmAddress?.satDesc = itemA.satDesc
-            realmAddress?.sunDesc = itemA.sunDesc
-            realmAddress?.monDesc = itemA.monDesc
-            realmAddress?.tuesDesc = itemA.tuesDesc
-            realmAddress?.wedDesc = itemA.wedDesc
-            realmAddress?.thursDesc = itemA.thursDesc
-            realmAddress?.friDesc = itemA.friDesc
-            newItem.AddressList?.add(realmAddress)
-
-        }
-
-        item.SlidesList.forEach { itemS: RealmSlides ->
-            val realmSlide = realm?.createObject(RealmSlides::class.java)
-            realmSlide?.url = itemS.url
-            realmSlide?.arrange = itemS.arrange
-            realmSlide?.description = itemS.description
-
-            newItem.SlidesList?.add(realmSlide)
-        }
-
-        item.cInsuranceList.forEach { itemC: RealmCInsurance ->
-            val realmCInsurance = realm?.createObject(RealmCInsurance::class.java)
-            realmCInsurance?.id = itemC.id
-            realmCInsurance?.name = itemC.name
-            realmCInsurance?.description = itemC.description
-
-            newItem.CInsuranceList?.add(realmCInsurance)
-
-        }
-
-        item.specialtiesList.forEach { itemSp: RealSpecialties ->
-            val realSpecialties = realm?.createObject(RealSpecialties::class.java)
-            realSpecialties?.name = itemSp.name
-            realSpecialties?.id = itemSp.id
-
-            newItem.SpecialtiesList?.add(realSpecialties)
-
-            Toast.makeText(this, "آیتم با موفقیت ذخیره شد ", Toast.LENGTH_LONG).show()
-        }
-
-        item.levelList.forEach { itemL: RealmLevel ->
-            val realmLevel = realm?.createObject(RealmLevel::class.java)
-            realmLevel?.id = itemL.id
-            realmLevel?.name = itemL.name
-            newItem.LevelList?.add(realmLevel)
-
-        }
-
-        val i = realm.where(RealmItemModelSave::class.java).equalTo("_id", id).findAll().count()
-        Log.e("count", "$i" + " ")
-        realm.commitTransaction()
-    }
 
     var id = 0
     var model = StaticValues.DEFAULT // default model is RealmItemModel
@@ -161,16 +65,20 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
+    var address = ""
+
     private fun realmItemModel(item: RealmItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialtiesList[0]?.name
         tv_dAddress.text = item.addressList[0]?.title
+        address = item.buildingUrl
     }
 
     fun favItemModel(item: RealmItemModelSave) {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialtiesList[0]?.name
         tv_dAddress.text = item.addressList[0]?.title
+        address = item.buildingUrl
     }
 
 
@@ -185,6 +93,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            Glide.with(this@DetailActivity).load(address).into((holder as ImageHolder).ivImage)
         }
 
 
@@ -194,6 +103,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             val cvImage = itemView.findViewById<CardView>(R.id.cv_bigItem)
+            val ivImage = itemView.findViewById<AppCompatImageView>(R.id.iv_imageBig)
 
             init {
                 cvImage.setOnClickListener(this)
@@ -213,6 +123,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            Glide.with(this@DetailActivity).load(address).into((holder as ImageHolder).ivImage)
         }
 
 
@@ -222,6 +133,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             val cvImage = itemView.findViewById<CardView>(R.id.cv_smallItem)
+            val ivImage = itemView.findViewById<AppCompatImageView>(R.id.iv_imageThumbnail)
 
             init {
                 cvImage.setOnClickListener(this)
