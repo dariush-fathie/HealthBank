@@ -4,7 +4,6 @@
     android:id="@+id/cv_mainCategoryContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
     app:contentPadding="8dp">
 
     <LinearLayout

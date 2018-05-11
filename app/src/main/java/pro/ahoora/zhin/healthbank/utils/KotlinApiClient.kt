@@ -7,7 +7,7 @@ import io.realm.RealmObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object kotlinApiInterface {
+object KotlinApiClient {
 
     private val BASE_URL = "http://unary.ir/service/"
     private var retrofit: Retrofit? = null

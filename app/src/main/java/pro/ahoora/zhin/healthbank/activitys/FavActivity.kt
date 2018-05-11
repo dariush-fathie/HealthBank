@@ -12,8 +12,8 @@ import io.realm.RealmResults
 import kotlinx.android.synthetic.main.activity_fav.*
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.adapters.GroupItemSaveAdapter
-import pro.ahoora.zhin.healthbank.models.GroupModel_Realm
-import pro.ahoora.zhin.healthbank.models.RealmItemModelSave
+import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 
 
 class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSelectedListener {
@@ -29,22 +29,23 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
     private fun addTabs() {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result = realm.where(RealmItemModelSave::class.java).findAll()
-        val groups = realm.where(RealmItemModelSave::class.java).distinct("groupId").findAll()
+        val result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).findAll()
+        val groups = realm.where(KotlinItemModel::class.java).equalTo("saved", true).distinct("groupId").findAll()
+        realm.commitTransaction()
+
         tabListId.clear()
         if (result.size > 0) {
             ctb.addTab(ctb.newTab().setText("همه").setIcon(getDrawableId(1)))
             tabListId.add(0)
-            groups.forEach { itemModelSave: RealmItemModelSave? ->
-                tabListId.add(itemModelSave?.groupId!!)
-                val name = realm.where(GroupModel_Realm::class.java).equalTo("id", itemModelSave.groupId).findFirst()?.name
-                ctb.addTab(ctb.newTab().setText(name).setIcon(getDrawableId(itemModelSave.groupId)))
+            groups.forEach { savedItem: KotlinItemModel? ->
+                tabListId.add(savedItem?.groupId!!)
+                ctb.addTab(ctb.newTab().setText(getTitleFromDb(savedItem.groupId)).setIcon(getDrawableId(savedItem.groupId)))
             }
 
         } else {
             Toast.makeText(this, "هیج آیتمی ذخیره نشده است", Toast.LENGTH_LONG).show()
         }
-        realm.commitTransaction()
+
         if (result.size > 0) {
             filter(0)
         }
@@ -52,6 +53,14 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
         iv_goback.setOnClickListener(this)
     }
 
+
+    private fun getTitleFromDb(groupId: Int): String {
+        val realm = Realm.getDefaultInstance()
+        realm.beginTransaction()
+        val name = realm.where(KotlinGroupModel::class.java).equalTo("groupId", groupId).findFirst()?.name
+        realm.commitTransaction()
+        return name!!
+    }
 
     override fun onTabReselected(tab: TabLayout.Tab?) {
 
@@ -111,16 +120,16 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
     fun filter(id: Int) {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result: RealmResults<RealmItemModelSave>
+        val result: RealmResults<KotlinItemModel>
         if (id != 0) {
-            result = realm.where(RealmItemModelSave::class.java).equalTo("groupId", id).findAll()
+            result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).equalTo("groupId", id).findAll()
         } else {
-            result = realm.where(RealmItemModelSave::class.java).findAll()
+            result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).findAll()
         }
         realm.commitTransaction()
         val list = ArrayList<Int>()
-        result.forEach { item: RealmItemModelSave ->
-            list.add(item._id)
+        result.forEach { item: KotlinItemModel ->
+            list.add(item.centerId)
         }
         initList(list)
     }

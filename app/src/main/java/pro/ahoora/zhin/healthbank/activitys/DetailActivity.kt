@@ -7,24 +7,49 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_detail.*
 import pro.ahoora.zhin.healthbank.R
-import pro.ahoora.zhin.healthbank.models.RealmItemModel
-import pro.ahoora.zhin.healthbank.models.RealmItemModelSave
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.StaticValues
-import pro.ahoora.zhin.healthbank.utils.Utils
 
 class DetailActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
-        Utils.saveItem(this@DetailActivity,id)
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction({ db: Realm? ->
+            db?.where(KotlinItemModel::class.java)
+                    ?.equalTo("centerId", id)
+                    ?.equalTo("saved", true)
+                    ?.findAll()
+                    ?.deleteAllFromRealm()
+            val model: KotlinItemModel = if (i == 0) {
+                db?.where(KotlinItemModel::class.java)?.equalTo("centerId", id)?.findFirst()!!
+            } else {
+                SearchActivity.tempModel
+            }
+            model.saved = true
+            db?.copyToRealmOrUpdate(model)
+            runOnUiThread {
+                Toast.makeText(this@DetailActivity, "آیتم با موفقیت ذخیره شد .", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        realm.beginTransaction()
+        val a = realm?.where(KotlinItemModel::class.java)
+                ?.equalTo("saved", true)
+                ?.equalTo("centerId", id)
+                ?.findFirst()
+        Log.e("A", "${a?.specialityList?.size} sSize")
+        Log.e("A", "${a?.addressList?.size} sAddress")
+        Log.e("A", "${a?.centerId} id")
+        realm.commitTransaction()
+
     }
 
-
     var id = 0
-    var model = StaticValues.DEFAULT // default model is RealmItemModel
-
+    var i = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
@@ -32,11 +57,17 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
             id = intent.getIntExtra("id", 1)
             val realm = Realm.getDefaultInstance()
             realm.beginTransaction()
-            if (intent.getStringExtra(StaticValues.MODEL).equals(StaticValues.DEFAULT)) {
-                realmItemModel(realm.where(RealmItemModel::class.java).equalTo("_id", id).findFirst()!!)
-            } else {
+            if (intent.getIntExtra(StaticValues.MODEL, 0) == 0) {
+                i = 0;
+                realmItemModel(realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!)
+            } else if (intent.getIntExtra(StaticValues.MODEL, 0) == 1) {
+                i = 1
                 btn_save.visibility = View.GONE
-                favItemModel(realm.where(RealmItemModelSave::class.java).equalTo("_id", id).findFirst()!!)
+                favItemModel(realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!)
+            } else if (intent.getIntExtra(StaticValues.MODEL, 0) == 2) {
+                i = 2
+                btn_save.visibility = View.VISIBLE
+                kotlinItemModel(SearchActivity.tempModel)
             }
             realm.commitTransaction()
             btn_save.setOnClickListener(this)
@@ -67,18 +98,25 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
 
     var address = ""
 
-    private fun realmItemModel(item: RealmItemModel) {
+    private fun realmItemModel(item: KotlinItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
-        tv_dt.text = item.specialtiesList[0]?.name
-        tv_dAddress.text = item.addressList[0]?.title
-        address = item.buildingUrl
+        tv_dt.text = item.specialityList!![0]?.name
+        tv_dAddress.text = item.addressList!![0]?.locTitle
+        address = item.buildingImg!!
     }
 
-    fun favItemModel(item: RealmItemModelSave) {
+    private fun favItemModel(item: KotlinItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
-        tv_dt.text = item.specialtiesList[0]?.name
-        tv_dAddress.text = item.addressList[0]?.title
-        address = item.buildingUrl
+        tv_dt.text = item.specialityList!![0]?.name
+        tv_dAddress.text = item.addressList!![0]?.locTitle
+        address = item.buildingImg!!
+    }
+
+    private fun kotlinItemModel(item: KotlinItemModel) {
+        tv_dName.text = item.firstName + " " + item.lastName
+        tv_dt.text = item.specialityList!![0]?.name
+        tv_dAddress.text = item.addressList!![0]?.locTitle
+        address = item.buildingImg!!
     }
 
 

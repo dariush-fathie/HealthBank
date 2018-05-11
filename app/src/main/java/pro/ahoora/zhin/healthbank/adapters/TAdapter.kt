@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
-import pro.ahoora.zhin.healthbank.models.RealSpecialties2
+import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 
 class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val idsArray = ArrayList<Int>()
@@ -35,11 +35,11 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         tArr.clear()
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result = realm.where(RealSpecialties2::class.java).findAll()
+        val result = realm.where(KotlinSpecialityModel::class.java).equalTo("saved", true).findAll()
         realm.commitTransaction()
-        result.forEach { item: RealSpecialties2 ->
-            tArr.add(item.name.toString())
-            tIds.add(item.id)
+        result.forEach { item: KotlinSpecialityModel ->
+            tArr.add(item.name!!)
+            tIds.add(item.specialtyId)
         }
 
     }

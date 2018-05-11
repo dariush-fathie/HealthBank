@@ -15,13 +15,14 @@ import com.bumptech.glide.Glide
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.drawer_layout.*
+import kotlinx.android.synthetic.main.net_err_layout.*
+import kotlinx.android.synthetic.main.progress_layout.*
 import pro.ahoora.zhin.healthbank.R
-import pro.ahoora.zhin.healthbank.models.GroupModel
-import pro.ahoora.zhin.healthbank.models.GroupModel_Realm
-import pro.ahoora.zhin.healthbank.models.RealSpecialties2
-import pro.ahoora.zhin.healthbank.models.Specialties2
-import pro.ahoora.zhin.healthbank.utils.ApiClient
+import pro.ahoora.zhin.healthbank.customClasses.GridItemDecoration
+import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
+import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
+import pro.ahoora.zhin.healthbank.utils.KotlinApiClient
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 import pro.ahoora.zhin.healthbank.utils.Utils
 import retrofit2.Call
@@ -32,7 +33,6 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     lateinit var adapter: CategoryAdapter
-    var drawerLayoutDefSelected = 0
 
     override fun onClick(v: View?) {
         when (v?.id) {
@@ -45,12 +45,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.rl_drawer3 -> drawerClick(2)
             R.id.rl_drawer4 -> drawerClick(3)
             R.id.iv_menu -> openDrawerLayout()
+            R.id.fab_search -> search()
+            R.id.rl_salamat -> startActivity(Intent(this@MainActivity, HeaIncServiceActivity::class.java))
         }
     }
 
     private fun drawerClick(position: Int) {
         closeDrawerLayout()
-        drawerLayoutDefSelected = position
+        Log.e("hggh", "$position")
         when (position) {
             0 -> closeDrawerLayout()
             1 -> startActivity(Intent(this@MainActivity, FavActivity::class.java))
@@ -58,7 +60,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             3 -> startActivity(Intent(this@MainActivity, ContactUs::class.java))
         }
     }
-
 
     private fun tryAgain() {
         initList()
@@ -96,8 +97,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setContentView(R.layout.activity_main)
         setClickListeners()
         initList()
-    }
 
+    }
 
 
     private fun setClickListeners() {
@@ -107,9 +108,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         rl_drawer2.setOnClickListener(this)
         rl_drawer3.setOnClickListener(this)
         rl_drawer4.setOnClickListener(this)
+        rl_salamat.setOnClickListener(this)
         btn_more.setOnClickListener(this)
         btn_tryAgain.setOnClickListener(this)
         btn_fav.setOnClickListener(this)
+        fab_search.setOnClickListener(this)
+    }
+
+    private fun search() {
+        startActivity(Intent(this, SearchActivity::class.java))
     }
 
     private fun initList() {
@@ -122,29 +129,33 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    fun showProgressLayout() {
+    private fun showProgressLayout() {
         ll_progressLayout.visibility = View.VISIBLE
     }
 
-    fun hideProgressLayout() {
+    private fun hideProgressLayout() {
         ll_progressLayout.visibility = View.GONE
     }
 
     private fun getSpList() {
-        val apiInterface = ApiClient.getClient().create(ApiInterface::class.java)
+        val apiInterface = KotlinApiClient.client.create(ApiInterface::class.java)
         val response = apiInterface.spList
-        response.enqueue(object : Callback<List<Specialties2>> {
-            override fun onResponse(call: Call<List<Specialties2>>?, response: Response<List<Specialties2>>?) {
-                val list: List<Specialties2>? = response?.body()
+        response.enqueue(object : Callback<List<KotlinSpecialityModel>> {
+            override fun onResponse(call: Call<List<KotlinSpecialityModel>>?, response: Response<List<KotlinSpecialityModel>>?) {
+                val list: List<KotlinSpecialityModel>? = response?.body()
                 val realmDatabase = Realm.getDefaultInstance()
                 try {
                     realmDatabase.executeTransactionAsync { realm: Realm? ->
-                        realm?.where(RealSpecialties2::class.java)?.findAll()?.deleteAllFromRealm()
-                        list?.forEach { spl: Specialties2 ->
-                            val realSpecialties2 = realm?.createObject(RealSpecialties2::class.java)
-                            realSpecialties2?.id = spl.id
-                            realSpecialties2?.name = spl.name
+                        realm?.where(KotlinSpecialityModel::class.java)?.findAll()?.deleteAllFromRealm()
+                        list?.forEach { spl: KotlinSpecialityModel ->
+                            spl.saved = true
+                            realm?.copyToRealm(spl)
                         }
+                        /*val r = realm?.where(KotlinSpecialityModel::class.java)?.findAll()
+                        r!!.forEach { model: KotlinSpecialityModel? ->
+                            Log.e("SP", "${model?.name}:${model?.specialtyId}:${model?.saved}")
+                        }
+                        */
                     }
 
                 } finally {
@@ -152,7 +163,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
 
-            override fun onFailure(call: Call<List<Specialties2>>?, t: Throwable?) {
+            override fun onFailure(call: Call<List<KotlinSpecialityModel>>?, t: Throwable?) {
                 Log.e("ERR", t?.message + "  ")
             }
         })
@@ -160,34 +171,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun getGroupCount() {
         showProgressLayout()
-        val apiInterface = ApiClient.getClient().create(ApiInterface::class.java)
+        val apiInterface = KotlinApiClient.client.create(ApiInterface::class.java)
         val response = apiInterface.groupCount
-        response.enqueue(object : Callback<List<GroupModel>> {
-            override fun onResponse(call: Call<List<GroupModel>>?, response: Response<List<GroupModel>>?) {
-                val list: List<GroupModel>? = response?.body()
-                val realmDatabase = Realm.getDefaultInstance()
-                try {
-                    realmDatabase.executeTransactionAsync { realm: Realm? ->
-                        realm?.where(GroupModel_Realm::class.java)?.findAll()?.deleteAllFromRealm()
-                        list?.forEach { group: GroupModel ->
-                            // inserting each record to database
-                            val realmGroupModel = realm?.createObject(GroupModel_Realm::class.java)
-                            realmGroupModel?.id = group.id
-                            realmGroupModel?.name = group.gName
-                            realmGroupModel?.count = group.count
-                            // realmQuery()
-                        }
-                    }
+        response.enqueue(object : Callback<List<KotlinGroupModel>> {
+            override fun onResponse(call: Call<List<KotlinGroupModel>>?, response: Response<List<KotlinGroupModel>>?) {
+                val list: List<KotlinGroupModel>? = response?.body()
+                val realm = Realm.getDefaultInstance()
+                realm.executeTransactionAsync { db: Realm? ->
+                    db?.where(KotlinGroupModel::class.java)?.findAll()?.deleteAllFromRealm()
+                    db?.copyToRealm(list!!)
 
-                } finally {
-                    realmDatabase.close()
+                    /*val r = db?.where(KotlinGroupModel::class.java)?.findAll()
+                    r?.forEach { model: KotlinGroupModel? ->
+                        Log.e("GM", "${model?.name}:${model?.groupId}")
+                    }*/
                 }
                 loadAdapter(list!!)
                 hideProgressLayout()
                 hideNetErrLayout()
             }
 
-            override fun onFailure(call: Call<List<GroupModel>>?, t: Throwable?) {
+            override fun onFailure(call: Call<List<KotlinGroupModel>>?, t: Throwable?) {
                 Toast.makeText(this@MainActivity, "خطا در اتصال به سرور", Toast.LENGTH_SHORT).show()
                 Log.e(ERR, t?.message + " aaa")
                 hideProgressLayout()
@@ -197,18 +201,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     val ERR = "ERROR>>"
-    private fun loadAdapter(list: List<GroupModel>) {
+    private fun loadAdapter(list: List<KotlinGroupModel>) {
         adapter = CategoryAdapter(list)
         rv_category.layoutManager = GridLayoutManager(this, 2)
+        val itemDecoration = GridItemDecoration(this, 10)
+        rv_category.addItemDecoration(itemDecoration)
         rv_category.adapter = adapter
     }
 
-    inner class CategoryAdapter(gList: List<GroupModel>) : RecyclerView.Adapter<CategoryAdapter.ItemHolder>() {
+    inner class CategoryAdapter(gList: List<KotlinGroupModel>) : RecyclerView.Adapter<CategoryAdapter.ItemHolder>() {
 
-        var groupsList: List<GroupModel> = gList
-
+        var groupsList: List<KotlinGroupModel> = gList
         var flagLoadAll = false
-
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
             val view: View = LayoutInflater.from(this@MainActivity).inflate(R.layout.main_category_item, parent, false)
@@ -226,22 +230,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         }
 
-        override fun onViewRecycled(holder: ItemHolder) {
-            super.onViewRecycled(holder)
-            Log.e("fdfd", "${holder.adapterPosition}")
-        }
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-
             if (groupsList.size > position) {
-                holder.subTitle.text = "${groupsList.get(position).getCount()}  مورد"
-                holder.titleTv.text = groupsList.get(position).gName
+                holder.subTitle.text = "${groupsList.get(position).counter}  مورد"
+                holder.titleTv.text = groupsList.get(position).name
             } else {
                 holder.subTitle.text = "0  مورد"
             }
             setAnimation(holder.container, position)
 
-            val i = groupsList.get(position).getId()
+            val i = groupsList.get(position).groupId
             Log.e("i", "$i")
             Glide.with(this@MainActivity).load(getDrawableId(i)).into(holder.imageView)
         }
@@ -293,7 +292,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             override fun onClick(v: View?) {
                 // start list activity
                 val i = Intent(this@MainActivity, OfficeActivity::class.java)
-                i.putExtra(StaticValues.CATEGORY, groupsList.get(adapterPosition).getId() - 1)
+                i.putExtra(StaticValues.CATEGORY, groupsList.get(adapterPosition).groupId)
                 startActivity(i)
             }
 

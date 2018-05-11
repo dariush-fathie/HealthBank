@@ -5,6 +5,7 @@ import android.content.Intent
 import android.support.v7.widget.AppCompatImageView
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,7 @@ import android.widget.RelativeLayout
 import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.DetailActivity
-import pro.ahoora.zhin.healthbank.models.RealmItemModel
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 
 class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -28,9 +29,10 @@ class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Ada
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
         realm.executeTransaction({ realmDatabase ->
-            val item = realm.where(RealmItemModel::class.java).equalTo("_id", ids?.get(position)).findFirst()
+            val item = realmDatabase.where(KotlinItemModel::class.java).equalTo("centerId", ids?.get(position)).findFirst()
+            Log.e("centerId", "${ids?.get(position)} : ${item?.centerId}")
             (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
-            holder.subTitle.text = item?.specialtiesList?.get(0)?.name
+             holder.subTitle.text = item?.specialityList?.get(0)?.name
         })
 
         /*item?.specialtiesList?.forEach { special: RealSpecialties? ->
@@ -58,7 +60,7 @@ class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Ada
             when (v?.id) {
                 R.id.rl_item -> {
                     val i = Intent(context, DetailActivity::class.java)
-                    i.putExtra(StaticValues.MODEL, StaticValues.DEFAULT)
+                    i.putExtra(StaticValues.MODEL, 0)
                     i.putExtra(StaticValues.ID, ids?.get(adapterPosition))
                     context.startActivity(i)
                     return

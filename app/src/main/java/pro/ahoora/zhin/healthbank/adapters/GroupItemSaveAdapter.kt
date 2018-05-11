@@ -12,7 +12,7 @@ import android.widget.RelativeLayout
 import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.DetailActivity
-import pro.ahoora.zhin.healthbank.models.RealmItemModelSave
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 
 class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -28,10 +28,10 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
         realm.beginTransaction()
-        val item = realm.where(RealmItemModelSave::class.java).equalTo("_id", ids?.get(position)).findFirst()
+        val item = realm.where(KotlinItemModel::class.java).equalTo("saved", true).equalTo("centerId", ids?.get(position)).findFirst()
         realm.commitTransaction()
         (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
-        holder.subTitle.text = item?.specialtiesList?.get(0)?.name
+        holder.subTitle.text = item?.specialityList?.get(0)?.name
     }
 
     override fun getItemCount(): Int {
@@ -47,7 +47,7 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
     internal inner class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         override fun onClick(v: View?) {
             val i = Intent(context, DetailActivity::class.java)
-            i.putExtra(StaticValues.MODEL, "saved")
+            i.putExtra(StaticValues.MODEL, 1)
             i.putExtra(StaticValues.ID, ids?.get(adapterPosition))
             context.startActivity(i)
         }
@@ -56,6 +56,7 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
         val subTitle: AppCompatTextView = itemView.findViewById(R.id.tv_subTitle)
         val t: AppCompatTextView = itemView.findViewById(R.id.tv_t)
         val item: RelativeLayout = itemView.findViewById(R.id.rl_item)
+
         init {
             item.setOnClickListener(this)
         }

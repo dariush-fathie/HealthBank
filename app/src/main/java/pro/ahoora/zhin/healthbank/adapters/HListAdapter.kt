@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
-import pro.ahoora.zhin.healthbank.models.RealmItemModel
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 
 class HListAdapter(ctx: Context, array: ArrayList<Int>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val context = ctx
@@ -26,7 +26,7 @@ class HListAdapter(ctx: Context, array: ArrayList<Int>) : RecyclerView.Adapter<R
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         realm.beginTransaction()
-        val item = realm.where(RealmItemModel::class.java).equalTo("_id", idArray.get(position)).findFirst()
+        val item = realm.where(KotlinItemModel::class.java).equalTo("centerId", idArray.get(position)).findFirst()
         realm.commitTransaction()
         (holder as ItemHolder).title.text = item?.firstName + " " + item?.lastName
     }

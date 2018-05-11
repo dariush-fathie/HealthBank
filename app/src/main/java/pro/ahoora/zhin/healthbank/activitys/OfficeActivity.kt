@@ -27,9 +27,10 @@ import pro.ahoora.zhin.healthbank.adapters.GroupItemAdapter
 import pro.ahoora.zhin.healthbank.adapters.TAdapter
 import pro.ahoora.zhin.healthbank.customClasses.CustomBottomSheetBehavior
 import pro.ahoora.zhin.healthbank.customClasses.TabLayoutInterface
-import pro.ahoora.zhin.healthbank.models.*
-import pro.ahoora.zhin.healthbank.utils.ApiClient
+import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
+import pro.ahoora.zhin.healthbank.utils.KotlinApiClient
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 import pro.ahoora.zhin.healthbank.utils.Utils
 import retrofit2.Call
@@ -64,15 +65,16 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         getItems()
     }
 
-    fun getTitleFromDb(): String {
+    private fun getTitleFromDb(): String {
+        Log.e("gid", "$groupId")
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val name = realm.where(GroupModel_Realm::class.java).equalTo("id", groupId + 1).findFirst()?.name
+        val name = realm.where(KotlinGroupModel::class.java).equalTo("groupId", groupId).findFirst()?.name
         realm.commitTransaction()
         return name!!
     }
 
-    private fun initListener(){
+    private fun initListener() {
         rl_filter.setOnClickListener(this)
         rl_sort.setOnClickListener(this)
         iv_goback.setOnClickListener(this)
@@ -95,116 +97,35 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun getItems() {
         if (Utils.isNetworkAvailable(this)) {
-            val apiInterface = ApiClient.getClient().create(ApiInterface::class.java)
-            apiInterface.getItems(groupId + 1).enqueue(object : Callback<List<ItemModel>> {
-                override fun onResponse(call: Call<List<ItemModel>>?, response: Response<List<ItemModel>>?) {
+            val apiInterface = KotlinApiClient.client.create(ApiInterface::class.java)
+            apiInterface.getItems(groupId).enqueue(object : Callback<List<KotlinItemModel>> {
+                override fun onResponse(call: Call<List<KotlinItemModel>>?, response: Response<List<KotlinItemModel>>?) {
                     val list = response?.body()
                     Log.e("success", list.toString() + " res")
+                    list?.forEach { itemModel: KotlinItemModel ->
+                        Log.e("centerId1", "${itemModel.centerId}")
+                    }
+
                     val realmDatabase = Realm.getDefaultInstance()
                     realmDatabase.executeTransactionAsync { realm: Realm? ->
-                        realm?.where(RealmItemModel::class.java)?.findAll()?.deleteAllFromRealm()
-                        list?.forEach { item: ItemModel ->
-                            // inserting each record to database
-                            val realmItemModel = realm?.createObject(RealmItemModel::class.java, item.id)
-                            Log.e("itemId", "${item.id}")
-                            realmItemModel?.naCode = item.naCode
-                            realmItemModel?.system_num = item.system_num
-                            realmItemModel?.firstName = item.firstName
-                            realmItemModel?.lastName = item.lastName
-                            realmItemModel?.regDate = item.regDate
-                            realmItemModel?.validDate = item.validDate
-                            realmItemModel?.active = item.active
-                            realmItemModel?.logoUrl = item.logoUrl
-                            realmItemModel?.buildingUrl = item.buildingUrl
-                            realmItemModel?.shortDesc = item.shortDesc
-                            realmItemModel?.bio = item.bio
-                            realmItemModel?.equipment = item.equipment
-                            realmItemModel?.services = item.services
-                            realmItemModel?.workTeam = item.workTeam
-                            realmItemModel?.elc_rec = item.elc_rec
-                            realmItemModel?.grade = item.grade
-                            realmItemModel?.groupId = item.groupId
-                            item.addresses?.forEach { itemA: ItemModel.Address ->
-                                val realmAddress = realm?.createObject(RealmAddress::class.java)
-                                realmAddress?.title = itemA.title
-                                realmAddress?.id = itemA.id
-                                realmAddress?.postalCode = itemA.postalCode
-                                realmAddress?.tel1 = itemA.tel1
-                                realmAddress?.tel1Desc = itemA.tel1Desc
-                                realmAddress?.tel2 = itemA.tel2
-                                realmAddress?.tel2Desc = itemA.tel2Desc
-                                realmAddress?.mobile1 = itemA.mobile1
-                                realmAddress?.mobile1Desc = itemA.mobile1Desc
-                                realmAddress?.mobile2 = itemA.mobile2
-                                realmAddress?.mobile2Desc = itemA.mobile2Desc
-                                realmAddress?.genDesc = itemA.genDesc
-                                realmAddress?.defaultAdd = itemA.defaultAdd
-                                realmAddress?.lat = itemA.lat
-                                realmAddress?.lng = itemA.lng
-                                realmAddress?.site = itemA.site
-                                realmAddress?.mail = itemA.mail
-                                realmAddress?.satDesc = itemA.satDesc
-                                realmAddress?.sunDesc = itemA.sunDesc
-                                realmAddress?.monDesc = itemA.monDesc
-                                realmAddress?.tuesDesc = itemA.tuesDesc
-                                realmAddress?.wedDesc = itemA.wedDesc
-                                realmAddress?.thursDesc = itemA.thursDesc
-                                realmAddress?.friDesc = itemA.friDesc
-
-                                realmItemModel?.AddressList?.add(realmAddress)
-
-                            }
-
-                            item.slides.forEach { itemS: ItemModel.Slides ->
-                                val realmSlide = realm?.createObject(RealmSlides::class.java)
-                                realmSlide?.url = itemS.url
-                                realmSlide?.arrange = itemS.arrange
-                                realmSlide?.description = itemS.description
-
-                                realmItemModel?.SlidesList?.add(realmSlide)
-                            }
-
-                            item.cInsurances.forEach { itemC: ItemModel.CInsurance ->
-                                val realmCInsurance = realm?.createObject(RealmCInsurance::class.java)
-                                realmCInsurance?.id = itemC.id
-                                realmCInsurance?.name = itemC.name
-                                realmCInsurance?.description = itemC.description
-
-                                realmItemModel?.CInsuranceList?.add(realmCInsurance)
-
-                            }
-
-                            item.specialties.forEach { itemSp: ItemModel.Specialties ->
-                                val realSpecialties = realm?.createObject(RealSpecialties::class.java)
-                                realSpecialties?.name = itemSp.name
-                                realSpecialties?.id = itemSp.id
-
-                                realmItemModel?.SpecialtiesList?.add(realSpecialties)
-
-                            }
-
-                            item.levels.forEach { itemL: ItemModel.Level ->
-                                val realmLevel = realm?.createObject(RealmLevel::class.java)
-                                realmLevel?.id = itemL.id
-                                realmLevel?.name = itemL.name
-
-                                realmItemModel?.LevelList?.add(realmLevel)
-
-                            }
-                        }
-                        val result1 = realm?.where(RealmItemModel::class.java)?.sort("firstName", Sort.ASCENDING)?.findAll()
+                        realm?.where(KotlinItemModel::class.java)
+                                ?.equalTo("saved", false)
+                                ?.findAll()
+                                ?.deleteAllFromRealm()
+                        realm?.copyToRealmOrUpdate(list!!)
+                        val result1 = realm?.where(KotlinItemModel::class.java)?.sort("firstName", Sort.ASCENDING)?.findAll()
                         idArray.clear()
-                        result1?.forEach { itemModel: RealmItemModel? ->
-                            idArray.add(itemModel?._id!!)
+                        result1?.forEach { itemModel: KotlinItemModel? ->
+                            idArray.add(itemModel?.centerId!!)
+                            Log.e("centerId2", "${itemModel.centerId}")
                         }
                         runOnUiThread {
                             initList(idArray)
                         }
-
                     }
                 }
 
-                override fun onFailure(call: Call<List<ItemModel>>?, t: Throwable?) {
+                override fun onFailure(call: Call<List<KotlinItemModel>>?, t: Throwable?) {
                     Log.e("ERR", t?.message + "  ")
                 }
             })
@@ -262,20 +183,20 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         // todo add filters
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result: RealmResults<RealmItemModel>
+        val result: RealmResults<KotlinItemModel>
         if (filterFlag) {
-            result = realm.where(RealmItemModel::class.java)
-                    .`in`("SpecialtiesList.id", filterArray)
+            result = realm.where(KotlinItemModel::class.java)
+                    .`in`("specialityList.specialtyId", filterArray)
                     .sort("firstName", sort)
                     .findAll()
         } else {
-            result = realm.where(RealmItemModel::class.java).sort("firstName", sort).findAll()
+            result = realm.where(KotlinItemModel::class.java).sort("firstName", sort).findAll()
         }
 
         realm.commitTransaction()
         idArray.clear()
-        result.forEach { item: RealmItemModel ->
-            idArray.add(item._id)
+        result.forEach { item: KotlinItemModel ->
+            idArray.add(item.centerId)
         }
         initList(idArray)
     }
@@ -285,14 +206,14 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         tv_filter.setTextColor(ContextCompat.getColor(this, R.color.colorAccent))
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result = realm.where(RealmItemModel::class.java)
-                .`in`("SpecialtiesList.id", array)
+        val result = realm.where(KotlinItemModel::class.java)
+                .`in`("specialityList.specialtyId", array)
                 .sort("firstName", Sort.ASCENDING)
                 .findAll()
         realm.commitTransaction()
         val list = ArrayList<Int>()
-        result.forEach { item: RealmItemModel ->
-            list.add(item._id)
+        result.forEach { item: KotlinItemModel ->
+            list.add(item.centerId)
         }
 
         initList(list)
@@ -305,12 +226,12 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         tv_filter.setTextColor(ContextCompat.getColor(this, R.color.androidTextColor))
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result: RealmResults<RealmItemModel>
-        result = realm.where(RealmItemModel::class.java).sort("firstName", Sort.ASCENDING).findAll()
+        val result: RealmResults<KotlinItemModel>
+        result = realm.where(KotlinItemModel::class.java).sort("firstName", Sort.ASCENDING).findAll()
         realm.commitTransaction()
         val list = ArrayList<Int>()
-        result.forEach { item: RealmItemModel ->
-            list.add(item._id)
+        result.forEach { item: KotlinItemModel ->
+            list.add(item.centerId)
         }
 
         initList(list)
