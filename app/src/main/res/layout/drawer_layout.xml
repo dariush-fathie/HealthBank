@@ -26,8 +26,7 @@
                 android:layout_height="50dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:src="@drawable/ic_hospital"
-                android:tint="@color/white" />
+                android:src="@drawable/ic_jin" />
 
             <android.support.v7.widget.AppCompatTextView
                 android:layout_width="match_parent"
@@ -73,7 +72,7 @@
                 android:layout_toStartOf="@+id/iv1"
                 android:gravity="center_vertical"
                 android:paddingEnd="17dp"
-                android:text="بانک سلامت"
+                android:text="ژین من"
                 android:textColor="@color/green"
                 android:textSize="16sp"
                 app:fontFamily="@font/yekan" />

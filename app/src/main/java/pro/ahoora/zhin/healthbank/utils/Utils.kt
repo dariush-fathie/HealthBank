@@ -6,10 +6,6 @@ import android.net.NetworkInfo
 import android.os.IBinder
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
-import io.realm.Realm
-import pro.ahoora.zhin.healthbank.activitys.DetailActivity
-import pro.ahoora.zhin.healthbank.models.*
 
 object Utils {
     fun isNetworkAvailable(context: Context): Boolean {
@@ -21,6 +17,21 @@ object Utils {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 
+    fun getScreenWidthPx(context: Context): Int {
+        return context.resources.displayMetrics.widthPixels
+    }
+
+    fun getScreenWidthDp(context: Context): Int {
+        return dpFromPx(context, getScreenWidthPx(context).toFloat()).toInt()
+    }
+
+    fun getScreenHeightPx(context: Context): Int {
+        return context.resources.displayMetrics.heightPixels
+    }
+
+    fun getScreenHeightDp(context: Context): Int {
+        return dpFromPx(context, getScreenWidthPx(context).toFloat()).toInt()
+    }
 
 
     fun dpFromPx(context: Context, px: Float): Float {

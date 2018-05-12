@@ -12,7 +12,6 @@ object KotlinApiClient {
     private val BASE_URL = "http://unary.ir/service/"
     private var retrofit: Retrofit? = null
 
-
     val gson = GsonBuilder().setExclusionStrategies(object : ExclusionStrategy {
         override fun shouldSkipClass(clazz: Class<*>?): Boolean {
             return false

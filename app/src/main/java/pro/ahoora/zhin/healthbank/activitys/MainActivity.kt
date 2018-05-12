@@ -19,6 +19,8 @@ import kotlinx.android.synthetic.main.net_err_layout.*
 import kotlinx.android.synthetic.main.progress_layout.*
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.customClasses.GridItemDecoration
+import pro.ahoora.zhin.healthbank.customClasses.OnSpinerItemClick
+import pro.ahoora.zhin.healthbank.customClasses.SpinnerDialog
 import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
 import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
@@ -47,7 +49,31 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.iv_menu -> openDrawerLayout()
             R.id.fab_search -> search()
             R.id.rl_salamat -> startActivity(Intent(this@MainActivity, HeaIncServiceActivity::class.java))
+            R.id.tv_city -> openCityDialog()
+            R.id.tv_prov -> openProvDialog()
         }
+    }
+
+    private fun openCityDialog() {
+        val cityArray = ArrayList<String>()
+        cityArray.add("سنندج")
+        cityArray.add("سقز")
+        cityArray.add("قروه")
+        cityArray.add("مریوان")
+        cityArray.add("بانه")
+        cityArray.add("کامیاران")
+        cityArray.add("بیجار")
+        cityArray.add("دیواندره")
+        cityArray.add("دهگلان")
+        val dialog = SpinnerDialog(this@MainActivity, cityArray, "شهر خود را انتخاب کنید :", "نه نمیخوام")
+        dialog.bindOnSpinerListener(OnSpinerItemClick { name, index ->
+            tv_city.text = name
+        })
+        dialog.showSpinerDialog()
+    }
+
+    private fun openProvDialog() {
+
     }
 
     private fun drawerClick(position: Int) {
@@ -113,6 +139,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btn_tryAgain.setOnClickListener(this)
         btn_fav.setOnClickListener(this)
         fab_search.setOnClickListener(this)
+        tv_prov.setOnClickListener(this)
+        tv_city.setOnClickListener(this)
     }
 
     private fun search() {
@@ -144,22 +172,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             override fun onResponse(call: Call<List<KotlinSpecialityModel>>?, response: Response<List<KotlinSpecialityModel>>?) {
                 val list: List<KotlinSpecialityModel>? = response?.body()
                 val realmDatabase = Realm.getDefaultInstance()
-                try {
-                    realmDatabase.executeTransactionAsync { realm: Realm? ->
-                        realm?.where(KotlinSpecialityModel::class.java)?.findAll()?.deleteAllFromRealm()
-                        list?.forEach { spl: KotlinSpecialityModel ->
-                            spl.saved = true
-                            realm?.copyToRealm(spl)
-                        }
-                        /*val r = realm?.where(KotlinSpecialityModel::class.java)?.findAll()
-                        r!!.forEach { model: KotlinSpecialityModel? ->
-                            Log.e("SP", "${model?.name}:${model?.specialtyId}:${model?.saved}")
-                        }
-                        */
+                realmDatabase.executeTransactionAsync { realm: Realm? ->
+                    realm?.copyToRealmOrUpdate(list!!)
+                    /*val savedSps = realm?.where(KotlinSpecialityModel::class.java)?.findAll()
+                    realm?.where(KotlinSpecialityModel::class.java)?.findAll()?.deleteAllFromRealm()
+                    list?.forEach { spl: KotlinSpecialityModel ->
+                        spl.saved = true
+                        realm?.copyToRealm(spl)
+                    }*/
+                    /*val r = realm?.where(KotlinSpecialityModel::class.java)?.findAll()
+                    r!!.forEach { model: KotlinSpecialityModel? ->
+                        Log.e("SP", "${model?.name}:${model?.specialtyId}:${model?.saved}")
                     }
-
-                } finally {
-                    realmDatabase.close()
+                    */
                 }
             }
 

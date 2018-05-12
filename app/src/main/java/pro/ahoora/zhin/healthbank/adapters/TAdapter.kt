@@ -14,10 +14,12 @@ import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 
 class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     val idsArray = ArrayList<Int>()
     val context = ctx
     val tArr = ArrayList<String>()
     val tIds = ArrayList<Int>()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.t_list_item, parent, false)
         return ItemHolder(v)
@@ -31,11 +33,12 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         fillBuffer()
     }
 
+
     private fun fillBuffer() {
         tArr.clear()
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result = realm.where(KotlinSpecialityModel::class.java).equalTo("saved", true).findAll()
+        val result = realm.where(KotlinSpecialityModel::class.java).distinct("specialtyId").findAll()
         realm.commitTransaction()
         result.forEach { item: KotlinSpecialityModel ->
             tArr.add(item.name!!)

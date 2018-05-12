@@ -19,33 +19,29 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
         val realm = Realm.getDefaultInstance()
         realm.executeTransaction({ db: Realm? ->
-            db?.where(KotlinItemModel::class.java)
-                    ?.equalTo("centerId", id)
-                    ?.equalTo("saved", true)
-                    ?.findAll()
-                    ?.deleteAllFromRealm()
             val model: KotlinItemModel = if (i == 0) {
-                db?.where(KotlinItemModel::class.java)?.equalTo("centerId", id)?.findFirst()!!
+                db?.where(KotlinItemModel::class.java)
+                        ?.equalTo("centerId", id)
+                        ?.findFirst()!!
             } else {
                 SearchActivity.tempModel
             }
             model.saved = true
             db?.copyToRealmOrUpdate(model)
+
+            val testModel = db?.where(KotlinItemModel::class.java)
+                    ?.equalTo("centerId", id)
+                    ?.equalTo("saved", true)
+                    ?.findFirst()
             runOnUiThread {
+                Log.e("savedItem:id", "${testModel?.centerId}")
+                Log.e("savedItem:spSize", "${testModel?.specialityList?.size}")
+                Log.e("savedItem:addSize", "${testModel?.addressList?.size}")
+                Log.e("savedItem:saved", "${testModel?.saved}")
+                Log.e("savedItem:name", "${testModel?.firstName} ${testModel?.lastName}")
                 Toast.makeText(this@DetailActivity, "آیتم با موفقیت ذخیره شد .", Toast.LENGTH_SHORT).show()
             }
         })
-
-        realm.beginTransaction()
-        val a = realm?.where(KotlinItemModel::class.java)
-                ?.equalTo("saved", true)
-                ?.equalTo("centerId", id)
-                ?.findFirst()
-        Log.e("A", "${a?.specialityList?.size} sSize")
-        Log.e("A", "${a?.addressList?.size} sAddress")
-        Log.e("A", "${a?.centerId} id")
-        realm.commitTransaction()
-
     }
 
     var id = 0
@@ -58,7 +54,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
             val realm = Realm.getDefaultInstance()
             realm.beginTransaction()
             if (intent.getIntExtra(StaticValues.MODEL, 0) == 0) {
-                i = 0;
+                i = 0
                 realmItemModel(realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!)
             } else if (intent.getIntExtra(StaticValues.MODEL, 0) == 1) {
                 i = 1
@@ -72,6 +68,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
             realm.commitTransaction()
             btn_save.setOnClickListener(this)
         }
+
 
         rv_imageListBig.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         rv_imageListBig.adapter = ImageAdapter()
@@ -101,21 +98,21 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
     private fun realmItemModel(item: KotlinItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle
+        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
         address = item.buildingImg!!
     }
 
     private fun favItemModel(item: KotlinItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle
+        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
         address = item.buildingImg!!
     }
 
     private fun kotlinItemModel(item: KotlinItemModel) {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle
+        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
         address = item.buildingImg!!
     }
 
@@ -133,7 +130,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             Glide.with(this@DetailActivity).load(address).into((holder as ImageHolder).ivImage)
         }
-
 
         internal inner class ImageHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
             override fun onClick(v: View?) {

@@ -1,7 +1,9 @@
 package pro.ahoora.zhin.healthbank.activitys
 
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.support.design.widget.TabLayout
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
@@ -29,17 +31,29 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
     private fun addTabs() {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).findAll()
-        val groups = realm.where(KotlinItemModel::class.java).equalTo("saved", true).distinct("groupId").findAll()
+
+        val result = realm.where(KotlinItemModel::class.java)
+                .equalTo("saved", true)
+                .findAll()
+
+        val groups = realm.where(KotlinItemModel::class.java)
+                .equalTo("saved", true)
+                .distinct("groupId")
+                .findAll()
+
         realm.commitTransaction()
 
         tabListId.clear()
         if (result.size > 0) {
-            ctb.addTab(ctb.newTab().setText("همه").setIcon(getDrawableId(1)))
+            val drawable = ContextCompat.getDrawable(this@FavActivity, R.drawable.ic_all)
+            drawable?.setColorFilter(ContextCompat.getColor(this@FavActivity, R.color.green), PorterDuff.Mode.SRC_IN)
+            ctb.addTab(ctb.newTab().setText("همه").setIcon(drawable))
             tabListId.add(0)
             groups.forEach { savedItem: KotlinItemModel? ->
                 tabListId.add(savedItem?.groupId!!)
-                ctb.addTab(ctb.newTab().setText(getTitleFromDb(savedItem.groupId)).setIcon(getDrawableId(savedItem.groupId)))
+                ctb.addTab(ctb.newTab()
+                        .setText(getTitleFromDb(savedItem.groupId))
+                        .setIcon(getDrawableId(savedItem.groupId)))
             }
 
         } else {
@@ -57,7 +71,9 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
     private fun getTitleFromDb(groupId: Int): String {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
-        val name = realm.where(KotlinGroupModel::class.java).equalTo("groupId", groupId).findFirst()?.name
+        val name = realm.where(KotlinGroupModel::class.java)
+                .equalTo("groupId", groupId)
+                .findFirst()?.name
         realm.commitTransaction()
         return name!!
     }
@@ -67,10 +83,11 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
     }
 
     override fun onTabUnselected(tab: TabLayout.Tab?) {
-
+        tab?.icon?.setColorFilter(ContextCompat.getColor(this@FavActivity, R.color.title), PorterDuff.Mode.SRC_IN)
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
+        tab?.icon?.setColorFilter(ContextCompat.getColor(this@FavActivity, R.color.green), PorterDuff.Mode.SRC_IN)
         Log.e("tab", "${tab?.position} +  s")
         if (tab?.position == 0) {
             filter(0)
@@ -122,9 +139,16 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
         realm.beginTransaction()
         val result: RealmResults<KotlinItemModel>
         if (id != 0) {
-            result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).equalTo("groupId", id).findAll()
+
+            result = realm.where(KotlinItemModel::class.java)
+                    .equalTo("saved", true)
+                    .equalTo("groupId", id).findAll()
+
         } else {
-            result = realm.where(KotlinItemModel::class.java).equalTo("saved", true).findAll()
+
+            result = realm.where(KotlinItemModel::class.java)
+                    .equalTo("saved", true).findAll()
+
         }
         realm.commitTransaction()
         val list = ArrayList<Int>()

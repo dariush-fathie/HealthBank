@@ -83,4 +83,5 @@ open class KotlinItemModel : RealmObject() {
     @Expose
     open var cInsuranceList: RealmList<KotlinSpecialityModel>? = null
 
+
 }

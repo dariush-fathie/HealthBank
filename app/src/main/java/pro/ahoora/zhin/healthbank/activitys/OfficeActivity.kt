@@ -105,15 +105,31 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
                     list?.forEach { itemModel: KotlinItemModel ->
                         Log.e("centerId1", "${itemModel.centerId}")
                     }
-
                     val realmDatabase = Realm.getDefaultInstance()
                     realmDatabase.executeTransactionAsync { realm: Realm? ->
+
+                        val savedItem = realm?.where(KotlinItemModel::class.java)
+                                ?.equalTo("saved", true)
+                                ?.findAll()
+                        val savedItemIds = ArrayList<Int>()
+                        savedItem?.forEach { model: KotlinItemModel? ->
+                            savedItemIds.add(model?.centerId!!)
+                        }
+
                         realm?.where(KotlinItemModel::class.java)
                                 ?.equalTo("saved", false)
+                                ?.equalTo("groupId", groupId)
                                 ?.findAll()
                                 ?.deleteAllFromRealm()
-                        realm?.copyToRealmOrUpdate(list!!)
-                        val result1 = realm?.where(KotlinItemModel::class.java)?.sort("firstName", Sort.ASCENDING)?.findAll()
+
+                        list?.forEach { kotlinItemModel: KotlinItemModel ->
+                            if (savedItemIds.contains(kotlinItemModel.centerId)) {
+                                kotlinItemModel.saved = true
+                            }
+                            realm?.copyToRealmOrUpdate(kotlinItemModel)
+                        }
+
+                        val result1 = realm?.where(KotlinItemModel::class.java)?.equalTo("groupId", groupId)?.sort("firstName", Sort.ASCENDING)?.findAll()
                         idArray.clear()
                         result1?.forEach { itemModel: KotlinItemModel? ->
                             idArray.add(itemModel?.centerId!!)
@@ -186,11 +202,14 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         val result: RealmResults<KotlinItemModel>
         if (filterFlag) {
             result = realm.where(KotlinItemModel::class.java)
+                    .equalTo("groupId", groupId)
                     .`in`("specialityList.specialtyId", filterArray)
                     .sort("firstName", sort)
                     .findAll()
         } else {
-            result = realm.where(KotlinItemModel::class.java).sort("firstName", sort).findAll()
+            result = realm.where(KotlinItemModel::class.java)
+                    .equalTo("groupId", groupId)
+                    .sort("firstName", sort).findAll()
         }
 
         realm.commitTransaction()
@@ -207,16 +226,17 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
         val result = realm.where(KotlinItemModel::class.java)
+                .equalTo("groupId", groupId)
                 .`in`("specialityList.specialtyId", array)
                 .sort("firstName", Sort.ASCENDING)
                 .findAll()
         realm.commitTransaction()
-        val list = ArrayList<Int>()
+        idArray.clear()
         result.forEach { item: KotlinItemModel ->
-            list.add(item.centerId)
+            idArray.add(item.centerId)
         }
 
-        initList(list)
+        initList(idArray)
     }
 
     var filterFlag = false
@@ -227,14 +247,17 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
         val result: RealmResults<KotlinItemModel>
-        result = realm.where(KotlinItemModel::class.java).sort("firstName", Sort.ASCENDING).findAll()
+        result = realm.where(KotlinItemModel::class.java)
+                .equalTo("groupId", groupId)
+                .sort("firstName", Sort.ASCENDING)
+                .findAll()
         realm.commitTransaction()
-        val list = ArrayList<Int>()
+        idArray.clear()
         result.forEach { item: KotlinItemModel ->
-            list.add(item.centerId)
+            idArray.add(item.centerId)
         }
 
-        initList(list)
+        initList(idArray)
     }
 
 
@@ -251,7 +274,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
     private fun onFilterClick() {
         val filterView: View = LayoutInflater.from(this@OfficeActivity).inflate(R.layout.filter, null, false)
         val tList: RecyclerView = filterView.findViewById(R.id.rv_tList)
-        val adapter: TAdapter = TAdapter(this@OfficeActivity)
+        val adapter = TAdapter(this@OfficeActivity)
         tList.layoutManager = GridLayoutManager(this@OfficeActivity, 3)
         tList.adapter = adapter
 

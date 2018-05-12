@@ -1,6 +1,7 @@
 package pro.ahoora.zhin.healthbank.fragments;
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.support.constraint.ConstraintLayout
@@ -21,6 +22,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.DirectionsApi
@@ -28,11 +30,14 @@ import com.google.maps.DirectionsApiRequest
 import com.google.maps.GeoApiContext
 import com.google.maps.model.DirectionsResult
 import com.google.maps.model.TravelMode
+import io.realm.Realm
 import org.greenrobot.eventbus.EventBus
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.OfficeActivity
 import pro.ahoora.zhin.healthbank.adapters.HListAdapter
 import pro.ahoora.zhin.healthbank.customClasses.CustomBottomSheetBehavior
+import pro.ahoora.zhin.healthbank.models.KotlinItemModel
+import pro.ahoora.zhin.healthbank.utils.Utils
 import java.util.concurrent.TimeUnit
 
 class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
@@ -53,12 +58,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     lateinit var bottomSheetLayout: ConstraintLayout
     lateinit var ivToggle: AppCompatImageView
     lateinit var idArray: ArrayList<Int>
+    private var snapedPosition: Int = 0
+    private lateinit var mMarker: Marker
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.fragment_map, container, false)
         idArray = (activity as OfficeActivity).idArray
-        initMap()
         initViews(v)
+        initMap()
         return v
     }
 
@@ -71,17 +78,72 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         if (bottomSheetBehavior is CustomBottomSheetBehavior) {
             (bottomSheetBehavior as CustomBottomSheetBehavior).setAllowUserDragging(false)
         }
+    }
+
+    private fun initList() {
         mapList.layoutManager = LinearLayoutManager(activity as Context, LinearLayoutManager.HORIZONTAL, false)
-        mapList.adapter = HListAdapter(activity as Context , idArray)
+        mapList.adapter = HListAdapter(activity as Context, idArray)
+        mapList.addItemDecoration(CustomMapListDecoration())
         val snapHelper = LinearSnapHelper()
-        mapList.addOnScrollListener(object :RecyclerView.OnScrollListener(){
+        mapList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                val p = snapHelper.findTargetSnapPosition(recyclerView?.layoutManager , dx , dy)
-                Log.e("po", "$p" + " ")
+                val layoutManager = recyclerView?.layoutManager as LinearLayoutManager
+                val fvi = layoutManager.findFirstVisibleItemPosition()
+                val lvi = layoutManager.findLastVisibleItemPosition()
+                val fcvi = layoutManager.findFirstCompletelyVisibleItemPosition()
+                val lcvi = layoutManager.findLastCompletelyVisibleItemPosition()
+
+                if (fcvi == lcvi) {
+                    snapedPosition = fcvi // or lcvi
+                } else {
+
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == 0) // if list stop moving
+                    onListSnaped()
             }
         })
         snapHelper.attachToRecyclerView(mapList)
+        addMarker(true)
+    }
+
+    private var currentSnapPosition: Int = -1
+
+
+    private fun onListSnaped() {
+        if (currentSnapPosition != snapedPosition) {
+            if (snapedPosition == -1) {
+                snapedPosition = 0
+            }
+            currentSnapPosition = snapedPosition
+            addMarker(false)
+            Log.e("listSnapedToPosition", "${currentSnapPosition}")
+        }
+    }
+
+    private fun addMarker(firstPosition: Boolean) {
+        var i = 0
+        if (!firstPosition) {
+            i = currentSnapPosition
+        }
+        val realm = Realm.getDefaultInstance()
+        var latlng = LatLng(-1.0, -1.0)
+        var name = ""
+        realm.executeTransaction({ db: Realm? ->
+            val item = db?.where(KotlinItemModel::class.java)?.equalTo("centerId", idArray[i])?.findFirst()
+            name = item?.firstName + " " + item?.lastName
+            val lat = item?.addressList!![0]?.latitude
+            val lng = item.addressList!![0]?.longitude
+            latlng = LatLng(lng?.toDouble()!!, lat?.toDouble()!!)
+            Log.e("LatLng", "${latlng}")
+            Log.e("name", name)
+        })
+        mMarker = map.addMarker(MarkerOptions().position(latlng).title(name))
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 18f))
     }
 
     private fun initMap() {
@@ -105,11 +167,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val sydney = LatLng(35.311339, 46.995957)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 19f))
+        /*googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 19f))*/
         Handler().postDelayed({ EventBus.getDefault().post("loaded") }, 150)
+        initList()
     }
-
 
     private fun getGeoContext(): GeoApiContext {
         val geoApiContext = GeoApiContext.Builder()
@@ -145,6 +207,34 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         }
         Log.e("paths", "${paths.size}${paths.toString()}")
         mMap.addPolyline(PolylineOptions().addAll(paths).color(ContextCompat.getColor(activity as Context, R.color.green)))
+    }
+
+    inner class CustomMapListDecoration : RecyclerView.ItemDecoration() {
+
+        private val screenWidthDp = Utils.getScreenWidthDp(activity as Context)
+        private val screenWidthPx = Utils.getScreenWidthPx(activity as Context)
+        private var itemPadding = 0
+
+        init {
+            itemPadding = Utils.pxFromDp(activity as Context, 16f).toInt()
+        }
+
+        override fun getItemOffsets(outRect: Rect?, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
+            val itemPosition = (view?.getLayoutParams() as RecyclerView.LayoutParams).viewAdapterPosition
+            val itemCount = parent?.adapter?.itemCount
+            val itemWidth = view.layoutParams.width
+            outRect?.top = itemPadding
+            outRect?.bottom = itemPadding
+            outRect?.left = itemPadding
+            outRect?.right = itemPadding
+            if (itemPosition == 0) {
+                outRect?.left = (screenWidthPx - itemWidth) / 2
+            }
+
+            if (itemPosition == itemCount?.minus(1)) {
+                outRect?.right = (screenWidthPx - itemWidth) / 2
+            }
+        }
     }
 
 

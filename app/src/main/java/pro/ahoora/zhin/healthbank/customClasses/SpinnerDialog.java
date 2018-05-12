@@ -3,13 +3,14 @@ package pro.ahoora.zhin.healthbank.customClasses;
 
 import android.app.Activity;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatTextView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -61,13 +62,13 @@ public class SpinnerDialog {
 
     public void showSpinerDialog() {
         AlertDialog.Builder adb = new AlertDialog.Builder(this.context);
-        View v = this.context.getLayoutInflater().inflate(R.layout.dialog_layout, (ViewGroup)null);
-        TextView rippleViewClose = (TextView)v.findViewById(R.id.close);
-        TextView title = (TextView)v.findViewById(R.id.spinerTitle);
+        View v = this.context.getLayoutInflater().inflate(R.layout.dialog_layout, (ViewGroup) null);
+        AppCompatTextView rippleViewClose = v.findViewById(R.id.close);
+        AppCompatTextView title = v.findViewById(R.id.spinerTitle);
         rippleViewClose.setText(this.closeTitle);
         title.setText(this.dTitle);
-        ListView listView = (ListView)v.findViewById(R.id.list);
-        final EditText searchBox = (EditText)v.findViewById(R.id.searchBox);
+        ListView listView = (ListView) v.findViewById(R.id.list);
+        final AppCompatEditText searchBox = v.findViewById(R.id.searchBox);
         final ArrayAdapter<String> adapter = new ArrayAdapter(this.context, R.layout.items_view, this.items);
         listView.setAdapter(adapter);
         adb.setView(v);
@@ -76,10 +77,10 @@ public class SpinnerDialog {
         this.alertDialog.setCancelable(false);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView t = (TextView)view.findViewById(R.id.text1);
+                TextView t = (TextView) view.findViewById(R.id.text1);
 
-                for(int j = 0; j < SpinnerDialog.this.items.size(); ++j) {
-                    if (t.getText().toString().equalsIgnoreCase(((String)SpinnerDialog.this.items.get(j)).toString())) {
+                for (int j = 0; j < SpinnerDialog.this.items.size(); ++j) {
+                    if (t.getText().toString().equalsIgnoreCase(((String) SpinnerDialog.this.items.get(j)).toString())) {
                         SpinnerDialog.this.pos = j;
                     }
                 }

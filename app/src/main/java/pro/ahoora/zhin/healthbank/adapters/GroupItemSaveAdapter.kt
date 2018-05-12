@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,11 +28,17 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
-        realm.beginTransaction()
-        val item = realm.where(KotlinItemModel::class.java).equalTo("saved", true).equalTo("centerId", ids?.get(position)).findFirst()
-        realm.commitTransaction()
-        (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
-        holder.subTitle.text = item?.specialityList?.get(0)?.name
+        try {
+            realm.beginTransaction()
+            val item = realm.where(KotlinItemModel::class.java).equalTo("centerId", ids?.get(position)).findFirst()
+            realm.commitTransaction()
+            (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
+            Log.e("SaveAdapter", "${item?.centerId} itemId")
+            Log.e("SaveAdapter", "${item?.specialityList?.size} spSize")
+            holder.subTitle.text = item?.specialityList!![0]?.name
+        } catch (e: Exception) {
+            Log.e("SaveAdapter", e.message + " ")
+        }
     }
 
     override fun getItemCount(): Int {

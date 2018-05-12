@@ -21,7 +21,7 @@ open class KotlinAddressModel : RealmObject() {
     open var tel1: String? = ""
     @SerializedName("tel1_desc")
     @Expose
-    open var tel1Desc: String?= ""
+    open var tel1Desc: String? = ""
     @SerializedName("tel2")
     @Expose
     open var tel2: String? = ""
@@ -48,16 +48,16 @@ open class KotlinAddressModel : RealmObject() {
     open var defaultAdd: String? = ""
     @SerializedName("longitude")
     @Expose
-    open var longitude: String? = ""
+    open var longitude: Float? = -1f
     @SerializedName("latitude")
     @Expose
-    open var latitude: String? = ""
+    open var latitude: Float? = -1f
     @SerializedName("site")
     @Expose
     open var site: String? = ""
     @SerializedName("mail")
     @Expose
-    open var mail: String?= ""
+    open var mail: String? = ""
     @SerializedName("sat_desc")
     @Expose
     open var satDesc: String? = ""

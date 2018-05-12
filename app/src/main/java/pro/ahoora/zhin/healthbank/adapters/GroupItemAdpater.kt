@@ -28,21 +28,16 @@ class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Ada
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
-        realm.executeTransaction({ realmDatabase ->
-            val item = realmDatabase.where(KotlinItemModel::class.java).equalTo("centerId", ids?.get(position)).findFirst()
-            Log.e("centerId", "${ids?.get(position)} : ${item?.centerId}")
-            (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
-             holder.subTitle.text = item?.specialityList?.get(0)?.name
-        })
-
-        /*item?.specialtiesList?.forEach { special: RealSpecialties? ->
-
-        }*/
-        /*if (Utils.isItemSaved(ids!![position])) {
-            holder.ivStar.setColorFilter(ContextCompat.getColor(context, R.color.colorAccent), PorterDuff.Mode.SRC_IN)
-        } else {
-            holder.ivStar.clearColorFilter()
-        }*/
+        try {
+            realm.executeTransaction({ realmDatabase ->
+                val item = realmDatabase.where(KotlinItemModel::class.java).equalTo("centerId", ids?.get(position)).findFirst()
+                Log.e("centerId", "${ids?.get(position)} : ${item?.centerId}")
+                (holder as ItemHolder).title.text = "${item?.firstName} ${item?.lastName}"
+                holder.subTitle.text = item?.specialityList!![0]?.name
+            })
+        } catch (e: Exception) {
+            Log.e("GroupAdapter", e.message + " ")
+        }
     }
 
     override fun getItemCount(): Int {
@@ -66,15 +61,7 @@ class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView.Ada
                     return
                 }
                 R.id.iv_starLike -> {
-                    /*val id = ids!![adapterPosition]
-                    if (!Utils.isItemSaved(id)) {
-                        ivStar.clearColorFilter()
-                        Utils.deleteSavedItem(id)
-                    } else {
-                        ivStar.setColorFilter(ContextCompat.getColor(context, R.color.colorAccent), PorterDuff.Mode.SRC_IN)
-                        Utils.saveItem(id)
-                        Toast.makeText(context, "نشان شد ", Toast.LENGTH_SHORT).show()
-                    }*/
+
                 }
             }
 

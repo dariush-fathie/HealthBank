@@ -48,7 +48,6 @@
                 android:lines="1"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
-                android:text="عزت الله رحیمی"
                 android:textColor="@color/title"
                 android:textSize="17sp"
                 android:textStyle="bold"
@@ -60,7 +59,6 @@
                 android:layout_height="wrap_content"
                 android:lines="1"
                 android:paddingBottom="8dp"
-                android:text="گوارش و کبد"
                 android:textColor="@color/subTitle"
                 android:textSize="15sp"
                 app:fontFamily="@font/yekan" />
