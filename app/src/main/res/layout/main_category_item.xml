@@ -13,12 +13,12 @@
         android:orientation="vertical">
 
         <android.support.v7.widget.AppCompatImageView
-            android:padding="2dp"
             android:id="@+id/iv_mainCategoryImage"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
+            android:padding="2dp"
             android:tint="@color/green" />
 
         <android.support.v7.widget.AppCompatTextView
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="15 مورد"
-            android:textColor="@color/dark"
+            android:textColor="@color/green"
             android:textSize="14sp"
             app:fontFamily="@font/yekan" />
 

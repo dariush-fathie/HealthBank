@@ -2,6 +2,7 @@ package pro.ahoora.zhin.healthbank.utils;
 
 import java.util.List;
 
+import pro.ahoora.zhin.healthbank.models.KotlinAboutContactModel;
 import pro.ahoora.zhin.healthbank.models.KotlinGroupModel;
 import pro.ahoora.zhin.healthbank.models.KotlinItemModel;
 import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel;
@@ -27,5 +28,12 @@ public interface ApiInterface {
 
     @GET("search/{someThing}")
     Callback<String> search1(@Path("someThing") String searchedText);
+
+    /*@GET("login/{user}/{pass}")
+    Call<LoginModel> login(@Path("user") String user, @Path("pass") String pass);*/
+
+    @GET("ac/")
+    Call<KotlinAboutContactModel> getAc();
+
 
 }

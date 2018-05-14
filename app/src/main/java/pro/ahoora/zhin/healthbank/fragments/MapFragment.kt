@@ -142,7 +142,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             Log.e("LatLng", "${latlng}")
             Log.e("name", name)
         })
-        mMarker = map.addMarker(MarkerOptions().position(latlng).title(name))
+        if (this::mMarker.isInitialized) {
+            mMarker.position = latlng
+            mMarker.title = name
+        } else {
+            mMarker = map.addMarker(MarkerOptions().position(latlng).title(name))
+        }
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 18f))
     }
 

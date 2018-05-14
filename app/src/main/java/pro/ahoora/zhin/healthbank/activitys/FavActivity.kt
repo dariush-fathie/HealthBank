@@ -57,7 +57,7 @@ class FavActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTabSe
             }
 
         } else {
-            Toast.makeText(this, "هیج آیتمی ذخیره نشده است", Toast.LENGTH_LONG).show()
+            tv_empty.visibility = View.VISIBLE
         }
 
         if (result.size > 0) {

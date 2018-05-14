@@ -1,9 +1,11 @@
 package pro.ahoora.zhin.healthbank.activitys
 
 import android.animation.ObjectAnimator
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.view.GravityCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.*
 import android.util.Log
@@ -21,6 +23,7 @@ import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.customClasses.GridItemDecoration
 import pro.ahoora.zhin.healthbank.customClasses.OnSpinerItemClick
 import pro.ahoora.zhin.healthbank.customClasses.SpinnerDialog
+import pro.ahoora.zhin.healthbank.models.KotlinAboutContactModel
 import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
 import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
@@ -40,7 +43,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         when (v?.id) {
             R.id.btn_more -> loadAllCategory()
             R.id.btn_fav -> openDrawerLayout()
-            R.id.rl_exit -> finish()
+            R.id.rl_exit -> showExitDialog()
             R.id.btn_tryAgain -> tryAgain()
             R.id.rl_drawer1 -> drawerClick(0)
             R.id.rl_drawer2 -> drawerClick(1)
@@ -53,6 +56,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.tv_prov -> openProvDialog()
         }
     }
+
+    private fun showExitDialog() {
+        closeDrawerLayout()
+        val alertDialog = AlertDialog.Builder(this)
+        alertDialog.setMessage("مطمئنید می خواهید از برنامه خارج شوید ؟")
+                .setPositiveButton("نه نمیخوام", DialogInterface.OnClickListener({ dialog, _ ->
+                    dialog.dismiss()
+                }))
+                .setNegativeButton("بله خارج میشوم", DialogInterface.OnClickListener({ _, _ ->
+                    finish()
+                }))
+        alertDialog.show()
+    }
+
 
     private fun openCityDialog() {
         val cityArray = ArrayList<String>()
@@ -91,7 +108,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         initList()
     }
 
-
     private fun showNetErrLayout() {
         btn_more.visibility = View.GONE
         ll_netErr.visibility = View.VISIBLE
@@ -101,7 +117,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btn_more.visibility = View.VISIBLE
         ll_netErr.visibility = View.GONE
     }
-
 
     private fun openDrawerLayout() {
         drawerLayout.openDrawer(GravityCompat.END)
@@ -151,6 +166,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if (Utils.isNetworkAvailable(this@MainActivity)) {
             getGroupCount()
             getSpList()// from server
+            getAboutContact()
         } else {
             showNetErrLayout()
             Toast.makeText(this, "به اینترنت متصل نیستید", Toast.LENGTH_SHORT).show()
@@ -221,6 +237,26 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 Log.e(ERR, t?.message + " aaa")
                 hideProgressLayout()
                 showNetErrLayout()
+            }
+        })
+    }
+
+    private fun getAboutContact() {
+        val apiInterface = KotlinApiClient.client.create(ApiInterface::class.java)
+        val response = apiInterface.ac
+        response.enqueue(object : Callback<KotlinAboutContactModel> {
+            override fun onResponse(call: Call<KotlinAboutContactModel>?, response: Response<KotlinAboutContactModel>?) {
+                val list: KotlinAboutContactModel? = response?.body()
+                val realm = Realm.getDefaultInstance()
+                realm.executeTransactionAsync { db: Realm? ->
+                    db?.where(KotlinAboutContactModel::class.java)?.findAll()?.deleteAllFromRealm()
+                    db?.copyToRealm(list!!)
+                }
+
+            }
+
+            override fun onFailure(call: Call<KotlinAboutContactModel>?, t: Throwable?) {
+                Log.e("about", t.toString());
             }
         })
     }
@@ -333,6 +369,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            closeDrawerLayout()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
 }
 

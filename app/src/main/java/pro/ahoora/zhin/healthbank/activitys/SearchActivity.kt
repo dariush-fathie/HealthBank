@@ -3,6 +3,7 @@ package pro.ahoora.zhin.healthbank.activitys
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.AppCompatImageView
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -13,6 +14,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.RelativeLayout
 import android.widget.Toast
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import io.realm.Realm
 import kotlinx.android.synthetic.main.fragment_search.*
 import pro.ahoora.zhin.healthbank.R
@@ -222,10 +225,18 @@ class SearchActivity : AppCompatActivity() {
                 holder.headerTitle.text = getTitleFromDb(pair.first)
                 holder.headerItemCount.text = "${pair.second} مورد"
             } else {
+                holder as ItemHolder
                 val realPosition = findRealItemPosition(position)
-                (holder as ItemHolder).title.text = dataSet[realPosition].firstName + " " + dataSet[realPosition].lastName
+                holder.title.text = dataSet[realPosition].firstName + " " + dataSet[realPosition].lastName
                 holder.subTitle.text = dataSet[realPosition].specialityList?.get(0)?.name
+
+                Glide.with(this@SearchActivity)
+                        .load(dataSet[realPosition].logoImg)
+                        .apply(RequestOptions().centerCrop().error(R.drawable.ic_jin).override(100, 130))
+                        .into(holder.image)
+
             }
+
         }
 
         inner class HeaderItemHolder(headerView: View) : RecyclerView.ViewHolder(headerView) {
@@ -247,9 +258,13 @@ class SearchActivity : AppCompatActivity() {
             val subTitle: AppCompatTextView = itemView.findViewById(R.id.tv_subTitle)
             val t: AppCompatTextView = itemView.findViewById(R.id.tv_t)
             val item: RelativeLayout = itemView.findViewById(R.id.rl_item)
+            val ivStar: AppCompatImageView = itemView.findViewById(R.id.iv_starLike)
+            val image: AppCompatImageView = itemView.findViewById(R.id.iv_itemImage)
+
 
             init {
                 item.setOnClickListener(this)
+                ivStar.visibility = View.GONE
             }
         }
 

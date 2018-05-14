@@ -13,12 +13,13 @@ import io.realm.Realm
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.models.KotlinSpecialityModel
 
-class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TAdapter(ctx: Context, filterList: ArrayList<Int>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     val idsArray = ArrayList<Int>()
     val context = ctx
     val tArr = ArrayList<String>()
     val tIds = ArrayList<Int>()
+    var filters = filterList
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.t_list_item, parent, false)
@@ -31,8 +32,10 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     init {
         fillBuffer()
+        filterList.forEach { i: Int ->
+            idsArray.add(i)
+        }
     }
-
 
     private fun fillBuffer() {
         tArr.clear()
@@ -44,21 +47,12 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             tArr.add(item.name!!)
             tIds.add(item.specialtyId)
         }
-
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is ItemHolder) {
-            holder.tTitle.text = tArr[position]
-            idsArray.forEach { i: Int ->
-                if (position + 1 == i) {
-                    holder.cb.isChecked = true
-                    return
-                } else {
-                    holder.cb.isChecked = false
-                }
-            }
-        }
+        (holder as ItemHolder).tTitle.text = tArr[position]
+        val x = tIds[position]
+        holder.cb.isChecked = filters.contains(x)
     }
 
 
@@ -91,7 +85,6 @@ class TAdapter(ctx: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         init {
             rl.setOnClickListener(this)
             cb.isClickable = false
-
         }
     }
 

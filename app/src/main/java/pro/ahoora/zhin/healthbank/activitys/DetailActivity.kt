@@ -1,5 +1,7 @@
 package pro.ahoora.zhin.healthbank.activitys
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.*
@@ -9,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_detail.*
 import pro.ahoora.zhin.healthbank.R
@@ -16,60 +19,102 @@ import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.StaticValues
 
 class DetailActivity : AppCompatActivity(), View.OnClickListener {
-    override fun onClick(v: View?) {
-        val realm = Realm.getDefaultInstance()
-        realm.executeTransaction({ db: Realm? ->
-            val model: KotlinItemModel = if (i == 0) {
-                db?.where(KotlinItemModel::class.java)
-                        ?.equalTo("centerId", id)
-                        ?.findFirst()!!
-            } else {
-                SearchActivity.tempModel
-            }
-            model.saved = true
-            db?.copyToRealmOrUpdate(model)
 
-            val testModel = db?.where(KotlinItemModel::class.java)
-                    ?.equalTo("centerId", id)
-                    ?.equalTo("saved", true)
-                    ?.findFirst()
-            runOnUiThread {
-                Log.e("savedItem:id", "${testModel?.centerId}")
-                Log.e("savedItem:spSize", "${testModel?.specialityList?.size}")
-                Log.e("savedItem:addSize", "${testModel?.addressList?.size}")
-                Log.e("savedItem:saved", "${testModel?.saved}")
-                Log.e("savedItem:name", "${testModel?.firstName} ${testModel?.lastName}")
-                Toast.makeText(this@DetailActivity, "آیتم با موفقیت ذخیره شد .", Toast.LENGTH_SHORT).show()
-            }
-        })
+    val realm = Realm.getDefaultInstance()!!
+
+    override fun onClick(v: View?) {
+        change = true
+        if (isSaved) {
+            btn_save.text = "ذخیره در نشان شده ها"
+            deleteItem(id)
+            itemSaved = false
+
+        } else {
+            btn_save.text = "حذف از نشان شده ها"
+            saveItem(id)
+            itemSaved = true
+        }
+
     }
 
     var id = 0
     var i = 0
+    var isSaved = false
+    var itemSaved = false
+    var change = false
+
+    lateinit var item: KotlinItemModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+
         if (intent != null) {
             id = intent.getIntExtra("id", 1)
-            val realm = Realm.getDefaultInstance()
-            realm.beginTransaction()
+            isSaved = checkItemIsSaved()
+
+            if (isSaved) {
+                btn_save.text = "حذف از نشان شده ها"
+            } else {
+                btn_save.text = "ذخیره در نشان شده ها"
+            }
+
             if (intent.getIntExtra(StaticValues.MODEL, 0) == 0) {
                 i = 0
-                realmItemModel(realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!)
             } else if (intent.getIntExtra(StaticValues.MODEL, 0) == 1) {
                 i = 1
                 btn_save.visibility = View.GONE
-                favItemModel(realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!)
             } else if (intent.getIntExtra(StaticValues.MODEL, 0) == 2) {
                 i = 2
                 btn_save.visibility = View.VISIBLE
-                kotlinItemModel(SearchActivity.tempModel)
             }
-            realm.commitTransaction()
+
+            if (i != 2) {
+                val realm = Realm.getDefaultInstance()
+                realm.beginTransaction()
+                item = realm.where(KotlinItemModel::class.java).equalTo("centerId", id).findFirst()!!
+                realm.commitTransaction()
+            } else {
+                item = SearchActivity.tempModel
+            }
+
+            loadDetails()
             btn_save.setOnClickListener(this)
         }
 
+        initLists()
+    }
 
+    private fun saveItem(centerId: Int) {
+        realm.executeTransaction({ db ->
+            val item = db.where(KotlinItemModel::class.java)
+                    .equalTo("centerId", centerId)
+                    .findFirst()!!
+            item.saved = true
+        })
+    }
+
+    private fun deleteItem(centerId: Int) {
+        realm.executeTransaction({ db ->
+            val item = db.where(KotlinItemModel::class.java)
+                    .equalTo("centerId", centerId)
+                    .findFirst()!!
+            item.saved = false
+        })
+    }
+
+    private fun checkItemIsSaved(): Boolean {
+        var isSaved = false
+        realm.executeTransaction({ db ->
+            val model = db.where(KotlinItemModel::class.java)
+                    ?.equalTo("centerId", id)
+                    ?.equalTo("saved", true)
+                    ?.findAll()!!
+            isSaved = model.count() > 0
+        })
+        return isSaved
+    }
+
+    private fun initLists() {
         rv_imageListBig.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         rv_imageListBig.adapter = ImageAdapter()
         list_indicator.attachToRecyclerView(rv_imageListBig)
@@ -90,32 +135,24 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
 
         rv_imageThumbnail.layoutManager = LinearLayoutManager(this)
         rv_imageThumbnail.adapter = ThumbnailAdapter()
-
     }
 
-    var address = ""
 
-    private fun realmItemModel(item: KotlinItemModel) {
+    private fun loadDetails() {
         tv_dName.text = item.firstName + " " + item.lastName
         tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
-        address = item.buildingImg!!
+        tv_dAddress.text = item.addressList!![0]?.locTitle
     }
 
-    private fun favItemModel(item: KotlinItemModel) {
-        tv_dName.text = item.firstName + " " + item.lastName
-        tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
-        address = item.buildingImg!!
+    override fun onBackPressed() {
+        if (change) {
+            val resultPayload = Intent(this@DetailActivity, OfficeActivity::class.java)
+            resultPayload.putExtra("save", itemSaved)
+            resultPayload.putExtra("centerId", id)
+            setResult(Activity.RESULT_OK, resultPayload)
+        }
+        super.onBackPressed()
     }
-
-    private fun kotlinItemModel(item: KotlinItemModel) {
-        tv_dName.text = item.firstName + " " + item.lastName
-        tv_dt.text = item.specialityList!![0]?.name
-        tv_dAddress.text = item.addressList!![0]?.locTitle + " : " + item.specialityList!![0]?.name
-        address = item.buildingImg!!
-    }
-
 
     inner class ImageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -124,11 +161,21 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun getItemCount(): Int {
-            return 3
+            return item.slideList?.size!!
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            Glide.with(this@DetailActivity).load(address).into((holder as ImageHolder).ivImage)
+            try {
+                Glide.with(this@DetailActivity)
+                        .load(item.slideList!![position]?.fileUrl)
+                        .apply(RequestOptions()
+                                .fitCenter()
+                                .placeholder(R.drawable.ic_jin))
+                        .into((holder as ImageHolder)
+                                .ivImage)
+            } catch (e: Exception) {
+                Log.e("glideErr", e.message + " ")
+            }
         }
 
         internal inner class ImageHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
@@ -153,11 +200,23 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun getItemCount(): Int {
-            return 3
+            return item.slideList?.size!!
         }
 
+
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            Glide.with(this@DetailActivity).load(address).into((holder as ImageHolder).ivImage)
+            try {
+                Glide.with(this@DetailActivity)
+                        .load(item.slideList!![position]?.fileUrl)
+                        .apply(RequestOptions()
+                                .fitCenter()
+                                .placeholder(R.drawable.ic_jin))
+                        .thumbnail(0.5f)
+                        .into((holder as ImageHolder)
+                                .ivImage)
+            } catch (e: Exception) {
+                Log.e("glideErr", e.message + " ")
+            }
         }
 
 

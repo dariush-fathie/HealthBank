@@ -2,8 +2,9 @@ package pro.ahoora.zhin.healthbank.utils
 
 
 object StaticValues {
-    val CATEGORY = "category"
-    val DEFAULT = "default"
-    val ID = "id"
-    val MODEL = "model"
+    const val CATEGORY = "category"
+    const val DEFAULT = "default"
+    const val ID = "id"
+    const val MODEL = "model"
+    const val requestCodeOfficeDetail = 1050
 }

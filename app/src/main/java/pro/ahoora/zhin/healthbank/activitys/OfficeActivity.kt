@@ -1,5 +1,7 @@
 package pro.ahoora.zhin.healthbank.activitys
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.design.widget.BottomSheetBehavior
@@ -44,7 +46,9 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private lateinit var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
     private lateinit var tabLayoutInterface: TabLayoutInterface
+    private lateinit var adapter: GroupItemAdapter
     var idArray = ArrayList<Int>()
+    var filterArray = ArrayList<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +86,8 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun initList(list: ArrayList<Int>) {
         rv_items.layoutManager = LinearLayoutManager(this)
-        rv_items.adapter = GroupItemAdapter(this, list)
+        adapter = GroupItemAdapter(this, list)
+        rv_items.adapter = adapter
         hideMainProgressLayout()
     }
 
@@ -195,7 +200,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
     }
 
 
-    fun sort(sort: Sort) {
+    private fun sort(sort: Sort) {
         // todo add filters
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
@@ -203,7 +208,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         if (filterFlag) {
             result = realm.where(KotlinItemModel::class.java)
                     .equalTo("groupId", groupId)
-                    .`in`("specialityList.specialtyId", filterArray)
+                    .`in`("specialityList.specialtyId", filterArray.toTypedArray())
                     .sort("firstName", sort)
                     .findAll()
         } else {
@@ -220,14 +225,14 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         initList(idArray)
     }
 
-    fun filter1(array: Array<Int>) {
+    private fun filter1(array: ArrayList<Int>) {
         filterFlag = true
         tv_filter.setTextColor(ContextCompat.getColor(this, R.color.colorAccent))
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
         val result = realm.where(KotlinItemModel::class.java)
                 .equalTo("groupId", groupId)
-                .`in`("specialityList.specialtyId", array)
+                .`in`("specialityList.specialtyId", array.toTypedArray())
                 .sort("firstName", Sort.ASCENDING)
                 .findAll()
         realm.commitTransaction()
@@ -239,10 +244,12 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         initList(idArray)
     }
 
-    var filterFlag = false
+    private var filterFlag = false
+    private var ascSort = true
 
-    fun clearFilter() {
+    private fun clearFilter() {
         filterFlag = false
+        filterArray.clear()
         tv_filter.setTextColor(ContextCompat.getColor(this, R.color.androidTextColor))
         val realm = Realm.getDefaultInstance()
         realm.beginTransaction()
@@ -260,7 +267,6 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         initList(idArray)
     }
 
-
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.rl_filter -> onFilterClick()
@@ -269,12 +275,10 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    lateinit var filterArray: Array<Int>
-
     private fun onFilterClick() {
         val filterView: View = LayoutInflater.from(this@OfficeActivity).inflate(R.layout.filter, null, false)
         val tList: RecyclerView = filterView.findViewById(R.id.rv_tList)
-        val adapter = TAdapter(this@OfficeActivity)
+        val adapter = TAdapter(this@OfficeActivity, filterArray)
         tList.layoutManager = GridLayoutManager(this@OfficeActivity, 3)
         tList.adapter = adapter
 
@@ -282,7 +286,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         builder.setCustomTitle(LayoutInflater.from(this@OfficeActivity).inflate(R.layout.filter_title, null, false))
         builder.setPositiveButton("باشه", { dialog, which ->
             if (adapter.idsArray.size > 0) {
-                filterArray = adapter.idsArray.toTypedArray()
+                filterArray = adapter.idsArray
                 Log.e("size", "${filterArray.size}")
                 filter1(filterArray)
             }
@@ -307,6 +311,12 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         rb1.isClickable = false
         rb2.isClickable = false
 
+        if (ascSort) {
+            rb1.isChecked = true
+        } else {
+            rb2.isChecked = true
+        }
+
         rl1.setOnClickListener({
             rb2.isChecked = false
             rb1.isChecked = true
@@ -322,8 +332,10 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
         builder.setPositiveButton("باشه", { dialog, which ->
             if (rb1.isChecked) {
                 sort(Sort.ASCENDING)
+                ascSort = true
             } else {
                 sort(Sort.DESCENDING)
+                ascSort = false
             }
         }).setNegativeButton("نه نمیخوام", { dialog, which ->
         })
@@ -334,6 +346,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(e: String) {
         tabLayoutInterface.hideProgress()
+        Log.e("dfs ", e)
     }
 
     override fun onBackPressed() {
@@ -341,6 +354,17 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == StaticValues.requestCodeOfficeDetail) {
+                val id = data?.getIntExtra("centerId", -1)
+                val savedOrDelete = data?.getBooleanExtra("save", false)
+                adapter.onItemMarkedEvent(id!!, savedOrDelete!!)
+            }
         }
     }
 

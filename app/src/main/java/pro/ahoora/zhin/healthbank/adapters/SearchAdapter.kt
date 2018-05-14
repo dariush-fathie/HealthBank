@@ -2,12 +2,15 @@ package pro.ahoora.zhin.healthbank.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.support.v7.widget.AppCompatImageView
 import android.support.v7.widget.AppCompatTextView
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.DetailActivity
 import pro.ahoora.zhin.healthbank.models.KotlinItemModel
@@ -25,9 +28,15 @@ class SearchAdapter(ctx: Context, data: List<KotlinItemModel>) : RecyclerView.Ad
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        // Glide.with(context).load("").apply(RequestOptions().centerCrop()).into(holder.imageView)
-        (holder as ItemHolder).title.text = dataSet.get(position).firstName + " " + dataSet.get(position).lastName
+        holder as ItemHolder
+        holder.title.text = dataSet.get(position).firstName + " " + dataSet.get(position).lastName
         holder.subTitle.text = dataSet.get(position).specialityList!![0]?.name
+
+        Glide.with(context)
+                .load(dataSet[position].logoImg)
+                .apply(RequestOptions().centerCrop().error(R.drawable.ic_jin).override(100, 130))
+                .into(holder.image)
+
     }
 
     override fun getItemCount(): Int {
@@ -47,9 +56,12 @@ class SearchAdapter(ctx: Context, data: List<KotlinItemModel>) : RecyclerView.Ad
         val subTitle: AppCompatTextView = itemView.findViewById(R.id.tv_subTitle)
         val t: AppCompatTextView = itemView.findViewById(R.id.tv_t)
         val item: RelativeLayout = itemView.findViewById(R.id.rl_item)
+        val image: AppCompatImageView = itemView.findViewById(R.id.iv_itemImage)
+        val ivStar: AppCompatImageView = itemView.findViewById(R.id.iv_starLike)
 
         init {
             item.setOnClickListener(this)
+            ivStar.visibility = View.GONE
         }
     }
 }

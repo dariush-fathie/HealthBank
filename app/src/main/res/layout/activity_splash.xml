@@ -8,19 +8,20 @@
     <android.support.v7.widget.AppCompatImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@mipmap/ic_launcher"
         android:layout_above="@id/tv_splashTitle"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/ic_launcher" />
 
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/tv_splashTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:padding="30dp"
+        android:padding="15dp"
         android:text="بانک سلامت ژین"
         android:textColor="@color/white"
-        android:textSize="23sp"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:fontFamily="@font/yekan" />
 
     <com.github.rahatarmanahmed.cpv.CircularProgressView
