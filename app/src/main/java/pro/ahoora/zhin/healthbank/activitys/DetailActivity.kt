@@ -396,7 +396,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
                 Log.e("session", "not exist")
             }
         })
-
     }
 
     private fun initBottomSheet() {
@@ -423,7 +422,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
         enableMyLocation()
         mMap?.setOnCameraMoveListener(this)
         val p = LatLng(item.addressList!![0]?.latitude?.toDouble()!!, item.addressList!![0]?.longitude?.toDouble()!!)
-        mMap?.addMarker(MarkerOptions().title("${item.firstName} ${item.lastName}").position(p))
+        mMap?.addMarker(MarkerOptions().title("${item.firstName} ${item.lastName}").position(p))?.showInfoWindow()
         mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(p, 16f))
         checkUserLoggedIn()
     }
