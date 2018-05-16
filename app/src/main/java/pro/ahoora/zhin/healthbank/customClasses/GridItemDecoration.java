@@ -34,16 +34,41 @@ public class GridItemDecoration extends RecyclerView.ItemDecoration {
         /*if (itemPosition == 0 || itemPosition == 1) {
             outRect.top = (int) Utils.INSTANCE.pxFromDp(context, 56);
         }*/
+        if (itemPosition == 0 || itemPosition == 1) {
+            outRect.top = mSizeGridSpacingPx;
+        }
 
         if (itemPosition % 2 == 0) {
-            outRect.left = mSizeGridSpacingPx ;
+            outRect.left = mSizeGridSpacingPx;
             outRect.right = mSizeGridSpacingPx / 2;
         } else {
-            outRect.right =mSizeGridSpacingPx ;
+            outRect.right = mSizeGridSpacingPx;
             outRect.left = mSizeGridSpacingPx / 2;
         }
 
         outRect.bottom = mSizeGridSpacingPx / 2;
+
+        if (itemCount > 6) {
+            if (itemCount % 2 == 0) {
+                if (itemPosition == itemCount - 1 || itemPosition == itemCount - 2) {
+                    outRect.bottom = (int) Utils.INSTANCE.pxFromDp(context, 72 + mSizeGridSpacingPx);
+                }
+            } else {
+                if (itemPosition == itemCount - 1) {
+                    outRect.bottom = (int) Utils.INSTANCE.pxFromDp(context, 72 + mSizeGridSpacingPx);
+                }
+            }
+        } else {
+            if (itemCount % 2 == 0) {
+                if (itemPosition == itemCount - 1 || itemPosition == itemCount - 2) {
+                    outRect.bottom = mSizeGridSpacingPx;
+                }
+            } else {
+                if (itemPosition == itemCount - 1) {
+                    outRect.bottom = mSizeGridSpacingPx;
+                }
+            }
+        }
 
     }
 

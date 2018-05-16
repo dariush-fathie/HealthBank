@@ -22,7 +22,6 @@ public class App extends Application {
 
 
         Realm.setDefaultConfiguration(config);
-
         FirebaseAnalytics.getInstance(this);
     }
 }

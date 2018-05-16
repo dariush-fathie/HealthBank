@@ -49,7 +49,14 @@ object Utils {
         } catch (e: Exception) {
             Log.e("ERR_KEYBOARD", e.message + " ")
         }
+    }
 
+    fun setLogin(b: Boolean) {
+        VarableValues.IsLOGIN = b
+    }
+
+    fun setYekta() {
+        VarableValues.yekta = "1";
     }
 
 }

@@ -74,9 +74,8 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
             item.saved = false
         })
 
-        ids?.remove(position)
+        ids?.remove(centerId)
         notifyItemRemoved(position)
-
     }
 
 

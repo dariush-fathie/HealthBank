@@ -35,7 +35,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener {
+
 
     lateinit var adapter: CategoryAdapter
 
@@ -70,9 +71,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         alertDialog.show()
     }
 
+    override fun onLongClick(v: View?): Boolean {
+        when (v?.id) {
+            R.id.iv_jinDrawer -> {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                return true
+            }
+        }
+        return false
+    }
 
     private fun openCityDialog() {
         val cityArray = ArrayList<String>()
+        cityArray.add("همه")
         cityArray.add("سنندج")
         cityArray.add("سقز")
         cityArray.add("قروه")
@@ -84,6 +95,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         cityArray.add("دهگلان")
         val dialog = SpinnerDialog(this@MainActivity, cityArray, "شهر خود را انتخاب کنید :", "نه نمیخوام")
         dialog.bindOnSpinerListener(OnSpinerItemClick { name, index ->
+            if (index == 1 || index == 0) {
+                initList()
+            } else {
+                deleteAdapter()
+                Toast.makeText(this, "پایگاه اطلاعات ما هنوز در حال تکمیل است ..", Toast.LENGTH_LONG).show()
+            }
             tv_city.text = name
         })
         dialog.showSpinerDialog()
@@ -138,9 +155,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setContentView(R.layout.activity_main)
         setClickListeners()
         initList()
-
     }
-
 
     private fun setClickListeners() {
         rl_exit.setOnClickListener(this)
@@ -156,6 +171,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         fab_search.setOnClickListener(this)
         tv_prov.setOnClickListener(this)
         tv_city.setOnClickListener(this)
+        iv_jinDrawer.setOnLongClickListener(this)
     }
 
     private fun search() {
@@ -265,9 +281,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun loadAdapter(list: List<KotlinGroupModel>) {
         adapter = CategoryAdapter(list)
         rv_category.layoutManager = GridLayoutManager(this, 2)
+        while (rv_category.itemDecorationCount > 0) {
+            rv_category.removeItemDecorationAt(0)
+        }
         val itemDecoration = GridItemDecoration(this, 10)
         rv_category.addItemDecoration(itemDecoration)
         rv_category.adapter = adapter
+    }
+
+    private fun deleteAdapter() {
+        while (rv_category.itemDecorationCount > 0) {
+            rv_category.removeItemDecorationAt(0)
+        }
+        rv_category.layoutManager = null
+        rv_category.adapter = null
     }
 
     inner class CategoryAdapter(gList: List<KotlinGroupModel>) : RecyclerView.Adapter<CategoryAdapter.ItemHolder>() {

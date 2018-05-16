@@ -138,7 +138,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             name = item?.firstName + " " + item?.lastName
             val lat = item?.addressList!![0]?.latitude
             val lng = item.addressList!![0]?.longitude
-            latlng = LatLng(lng?.toDouble()!!, lat?.toDouble()!!)
+            latlng = LatLng(lat?.toDouble()!!, lng?.toDouble()!!)
             Log.e("LatLng", "${latlng}")
             Log.e("name", name)
         })
@@ -176,42 +176,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 19f))*/
         Handler().postDelayed({ EventBus.getDefault().post("loaded") }, 150)
         initList()
-    }
-
-    private fun getGeoContext(): GeoApiContext {
-        val geoApiContext = GeoApiContext.Builder()
-        geoApiContext.apiKey("AIzaSyCwx7842CtkOpGo-5RlUv7c8Ig-y2a0HxI")
-        geoApiContext.queryRateLimit(3)
-        geoApiContext.connectTimeout(5, TimeUnit.SECONDS)
-        geoApiContext.writeTimeout(5, TimeUnit.SECONDS)
-        geoApiContext.readTimeout(5, TimeUnit.SECONDS)
-        return geoApiContext.build()
-    }
-
-    private fun directionRequest() {
-        val origin: com.google.maps.model.LatLng = com.google.maps.model.LatLng(35.307400, 46.994016)
-        val destination: com.google.maps.model.LatLng = com.google.maps.model.LatLng(35.317059, 46.999075)
-        val directionReq: DirectionsApiRequest = DirectionsApi.newRequest(getGeoContext())
-        directionReq.destination(origin)
-        directionReq.origin(destination)
-        directionReq.mode(TravelMode.DRIVING)
-        directionReq.alternatives(false)
-        try {
-            addPolyline(directionReq.await(), map)
-        } catch (e: Exception) {
-            Log.e("ERR", e.message + " ")
-        }
-    }
-
-    private fun addPolyline(results: DirectionsResult, mMap: GoogleMap) {
-        val decodedPath = results.routes[0].overviewPolyline.decodePath()
-        val paths = ArrayList<com.google.android.gms.maps.model.LatLng>()
-        Log.e("path", "${decodedPath.size}${decodedPath.toString()}")
-        decodedPath.forEach { path: com.google.maps.model.LatLng ->
-            paths.add(com.google.android.gms.maps.model.LatLng(path.lat, path.lng))
-        }
-        Log.e("paths", "${paths.size}${paths.toString()}")
-        mMap.addPolyline(PolylineOptions().addAll(paths).color(ContextCompat.getColor(activity as Context, R.color.green)))
     }
 
     inner class CustomMapListDecoration : RecyclerView.ItemDecoration() {

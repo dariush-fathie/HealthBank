@@ -16,11 +16,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_office.*
 import kotlinx.android.synthetic.main.bottom_sheet_layout.*
+import kotlinx.android.synthetic.main.detail_map.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -40,7 +44,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class OfficeActivity : AppCompatActivity(), View.OnClickListener {
+class OfficeActivity : AppCompatActivity(), View.OnClickListener{
+
 
     var groupId = 0
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -164,8 +169,11 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
+
+
     private fun getBottomSheetCallback(): BottomSheetBehavior.BottomSheetCallback {
         bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 Log.e("slide", "$slideOffset")
             }
@@ -175,6 +183,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener {
                     BottomSheetBehavior.STATE_HIDDEN -> {
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
+
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                     }

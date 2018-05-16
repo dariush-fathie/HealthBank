@@ -8,17 +8,21 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/white"
         android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
         <android.support.design.widget.CollapsingToolbarLayout
+
             android:id="@+id/ctl"
-            android:layout_width="match_parent"
+            android:layout_width="140dp"
             android:layout_height="140dp"
+            android:layout_gravity="center"
             android:minHeight="40dp"
             app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed|snap"
             app:titleEnabled="false">
 
             <ImageView
+
                 android:id="@+id/iv_insured"
                 android:layout_width="140dp"
                 android:layout_height="140dp"

@@ -2,7 +2,7 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
@@ -22,7 +22,9 @@
             android:layout_marginRight="30dp"
             android:background="@drawable/rounded_edittext_states"
             android:hint="نام"
+            android:imeOptions="actionNext"
             android:maxLines="1"
+            android:nextFocusDown="@+id/et_lastName"
             android:padding="8dip"
             android:textColor="#538350" />
 
@@ -35,7 +37,9 @@
             android:layout_marginRight="30dp"
             android:background="@drawable/rounded_edittext_states"
             android:hint="نام خانوادگی"
+            android:imeOptions="actionNext"
             android:maxLines="1"
+            android:nextFocusDown="@+id/et_father"
             android:padding="8dip"
             android:textColor="#538350" />
 
@@ -45,16 +49,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
+
             android:background="@drawable/rounded_edittext_states"
             android:hint="نام پدر"
+            android:imeOptions="actionNext"
             android:maxLines="1"
+            android:nextFocusDown="@+id/et_postal_code"
             android:padding="8dip"
             android:textColor="#538350" />
 
         <EditText
+
             android:id="@+id/et_nacode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,6 +70,7 @@
             android:layout_marginRight="30dp"
             android:background="@drawable/rounded_edittext_states"
             android:hint="کد ملی"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:maxLines="1"
             android:padding="8dip"
