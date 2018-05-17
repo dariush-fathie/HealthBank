@@ -54,11 +54,10 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
     private val request_permission = 1052
     private val request_location_setting = 1053
 
-    val realm = Realm.getDefaultInstance()!!
-    var id = 0
-    var i = 0
-    var isSaved = false
-    var itemSaved = false
+    private val realm = Realm.getDefaultInstance()!!
+    private var id = 0
+    private var i = 0
+    private var isSaved = false
 
     // if model save or delete form realm -> change = true  else change = false
     var change = false
@@ -91,12 +90,12 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
                 if (isSaved) {
                     btn_save.text = "ذخیره در نشان شده ها"
                     deleteItem(id)
-                    itemSaved = false
+                    isSaved = false
 
                 } else {
                     btn_save.text = "حذف از نشان شده ها"
                     saveItem(id)
-                    itemSaved = true
+                    isSaved = true
                 }
             }
             R.id.rl_seeOnMap -> {
@@ -109,6 +108,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
                 savePoint()
             }
             R.id.fab_direction -> directionRequest()
+            R.id.iv_goback -> finish()
         }
     }
 
@@ -150,6 +150,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
             fab_closeMap.setOnClickListener(this)
             rl_seeOnMap.setOnClickListener(this)
             fab_direction.setOnClickListener(this)
+            iv_goback.setOnClickListener(this)
         }
         initBottomSheet()
         initLists()
@@ -195,6 +196,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
                 override fun onFailure(e: Throwable?) {
                     runOnUiThread({
                         alert.dismiss()
+                        Log.e("direction error", e?.message + " ")
                         Toast.makeText(this@DetailActivity, "خطایی رخ داد", Toast.LENGTH_SHORT).show()
                     })
                 }
@@ -239,7 +241,11 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
         // get last saved location
         mFusedLocationClient.lastLocation.addOnSuccessListener { location ->
             //mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 17f))
-            currentPoint = LatLng(location.latitude, location.longitude)
+            try {
+                currentPoint = LatLng(location.latitude, location.longitude)
+            } catch (e: Exception) {
+                Log.e("loc", "error")
+            }
         }
     }
 
@@ -300,11 +306,11 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
                 val x = LatLng(locationResult.lastLocation.latitude, locationResult.lastLocation.longitude)
                 currentPoint = x
                 //mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(x, 18f))
-
                 Log.e("Location Update", "location updated!")
             }
         }
         startLocationUpdate()
+        enableMyLocation()
     }
 
     @SuppressLint("MissingPermission")
@@ -378,7 +384,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-
     private fun checkUserLoggedIn() {
         LoginClass(this, object : LoginListener {
             override fun sessionExist() {
@@ -419,7 +424,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
         ll_detailProgress.visibility = View.GONE
 
         checkLocationPermissions()
-        enableMyLocation()
         mMap?.setOnCameraMoveListener(this)
         val p = LatLng(item.addressList!![0]?.latitude?.toDouble()!!, item.addressList!![0]?.longitude?.toDouble()!!)
         mMap?.addMarker(MarkerOptions().title("${item.firstName} ${item.lastName}").position(p))?.showInfoWindow()
@@ -428,7 +432,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
     }
 
     private fun formatLatLng(p: LatLng): String {
-        return "x : " + p.latitude + "\n" + "y : " + p.longitude
+        return "x : " + p.longitude + "\n" + "y : " + p.latitude
     }
 
     private fun getBottomSheetCallback(): BottomSheetBehavior.BottomSheetCallback {
@@ -522,7 +526,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
     override fun onBackPressed() {
         if (change) {
             val resultPayload = Intent(this@DetailActivity, OfficeActivity::class.java)
-            resultPayload.putExtra("save", itemSaved)
+            resultPayload.putExtra("save", isSaved)
             resultPayload.putExtra("centerId", id)
             setResult(Activity.RESULT_OK, resultPayload)
         }
@@ -651,6 +655,5 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, OnMapReadyCall
             }
         }
     }
-
 
 }

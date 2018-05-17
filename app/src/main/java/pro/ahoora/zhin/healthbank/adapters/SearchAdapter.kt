@@ -31,7 +31,7 @@ class SearchAdapter(ctx: Context, data: List<KotlinItemModel>) : RecyclerView.Ad
         holder as ItemHolder
         holder.title.text = dataSet.get(position).firstName + " " + dataSet.get(position).lastName
         holder.subTitle.text = dataSet.get(position).specialityList!![0]?.name
-
+        holder.t.text = dataSet.get(position).levelList!![0]?.name
         Glide.with(context)
                 .load(dataSet[position].logoImg)
                 .apply(RequestOptions().centerCrop().error(R.drawable.ic_jin).override(100, 130))

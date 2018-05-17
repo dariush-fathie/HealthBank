@@ -19,6 +19,7 @@ import com.bumptech.glide.request.RequestOptions
 import io.realm.Realm
 import kotlinx.android.synthetic.main.fragment_search.*
 import pro.ahoora.zhin.healthbank.R
+import pro.ahoora.zhin.healthbank.customClasses.SimpleItemDecoration
 import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
 import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.ApiInterface
@@ -30,7 +31,22 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : AppCompatActivity(), View.OnClickListener {
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.fab_goUp -> rv_search.smoothScrollToPosition(0)
+            R.id.iv_search -> search()
+        }
+    }
+
+    private fun search() {
+        if (et_search.text.toString() != "") {
+            getItems()
+            Utils.closeKeyBoard(et_search.windowToken, this@SearchActivity)
+        } else {
+            Toast.makeText(this@SearchActivity, "لطفا نام دکتر را وارد کنید , ", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +62,8 @@ class SearchActivity : AppCompatActivity() {
             }
             false
         }
+        fab_goUp.setOnClickListener(this)
+        iv_search.setOnClickListener(this)
     }
 
 
@@ -116,9 +134,27 @@ class SearchActivity : AppCompatActivity() {
     }
 
 
-    fun loadAdapter(pairList: ArrayList<Pair<Int, Int>>, data: List<KotlinItemModel>): Unit {
+    fun loadAdapter(pairList: ArrayList<Pair<Int, Int>>, data: List<KotlinItemModel>) {
         rv_search.layoutManager = LinearLayoutManager(this)
+        while (rv_search.itemDecorationCount > 0) {
+            rv_search.removeItemDecorationAt(0)
+        }
+        val decor = SimpleItemDecoration(this, 10)
+        rv_search.addItemDecoration(decor)
         rv_search.adapter = SearchAdapterWithHeader(pairList, data)
+
+        rv_search.clearOnScrollListeners()
+        rv_search.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val i = (recyclerView?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                if (i > 8) {
+                    fab_goUp.visibility = View.VISIBLE
+                } else {
+                    fab_goUp.visibility = View.GONE
+                }
+            }
+        })
 
     }
 

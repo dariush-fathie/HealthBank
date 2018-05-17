@@ -379,9 +379,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         inner class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
             override fun onClick(v: View?) {
                 // start list activity
-                val i = Intent(this@MainActivity, OfficeActivity::class.java)
-                i.putExtra(StaticValues.CATEGORY, groupsList.get(adapterPosition).groupId)
-                startActivity(i)
+                if (groupsList.get(adapterPosition).counter > 0) {
+                    val i = Intent(this@MainActivity, OfficeActivity::class.java)
+                    i.putExtra(StaticValues.CATEGORY, groupsList.get(adapterPosition).groupId)
+                    startActivity(i)
+                } else {
+                    Toast.makeText(this@MainActivity, "پایگاه داده ژین در حال تمکیل اطلاعات است ...", Toast.LENGTH_SHORT).show()
+                }
+
             }
 
             val imageView: AppCompatImageView = itemView.findViewById(R.id.iv_mainCategoryImage)

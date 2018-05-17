@@ -52,6 +52,7 @@ class GroupItemSaveAdapter(ctx: Context, idList: ArrayList<Int>?) : RecyclerView
             Log.e("SaveAdapter", "${item.centerId} itemId")
             Log.e("SaveAdapter", "${item.specialityList?.size} spSize")
             holder.subTitle.text = item.specialityList!![0]?.name
+            holder.t.text = item.levelList!![0]?.name
         } catch (e: Exception) {
             Log.e("SaveAdapter", e.message + " ")
         }

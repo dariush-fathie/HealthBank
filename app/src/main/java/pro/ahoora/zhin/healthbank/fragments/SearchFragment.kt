@@ -1,6 +1,7 @@
 package pro.ahoora.zhin.healthbank.fragments
 
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
 import android.support.v7.widget.*
 import android.text.Editable
@@ -16,6 +17,7 @@ import org.greenrobot.eventbus.EventBus
 import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.activitys.OfficeActivity
 import pro.ahoora.zhin.healthbank.adapters.SearchAdapter
+import pro.ahoora.zhin.healthbank.customClasses.SimpleItemDecoration
 import pro.ahoora.zhin.healthbank.models.KotlinItemModel
 import pro.ahoora.zhin.healthbank.utils.Utils
 import java.util.*
@@ -26,14 +28,12 @@ class SearchFragment : Fragment(), View.OnClickListener {
     private var tvItemNum: AppCompatTextView? = null
     private var etSearch: AppCompatEditText? = null
     private var ivSearch: AppCompatImageView? = null
+    private var fabGoUp: FloatingActionButton? = null
     private var adapter: SearchAdapter? = null
     private var progressView: CircularProgressView? = null
     private var groupId = 1
     lateinit var realm: Realm
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
@@ -54,7 +54,9 @@ class SearchFragment : Fragment(), View.OnClickListener {
         tvItemNum = view.findViewById(R.id.tv_itemNums)
         etSearch = view.findViewById(R.id.et_search)
         ivSearch = view.findViewById(R.id.iv_search)
+        fabGoUp = view.findViewById(R.id.fab_goUp)
         ivSearch!!.setOnClickListener(this)
+        fabGoUp!!.setOnClickListener(this)
         etSearch!!.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -111,8 +113,30 @@ class SearchFragment : Fragment(), View.OnClickListener {
 
     private fun initList(dataSet: List<KotlinItemModel>) {
         adapter = SearchAdapter(activity!!, dataSet)
+
+        while (rvSearch?.itemDecorationCount!! > 0) {
+            rvSearch?.removeItemDecorationAt(0)
+        }
+        val decor = SimpleItemDecoration(activity, 10)
+        rvSearch?.addItemDecoration(decor)
+
         rvSearch!!.layoutManager = LinearLayoutManager(activity)
         rvSearch!!.adapter = adapter
+
+        rvSearch?.clearOnScrollListeners()
+        rvSearch?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val i = (recyclerView?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                Log.e("sfdskfls","flkdsjflkf")
+                if (i > 8) {
+                    fabGoUp?.visibility = View.VISIBLE
+                } else {
+                    fabGoUp?.visibility = View.GONE
+                }
+            }
+        })
+
         tvItemNum!!.text = dataSet.size.toString() + " مورد پیدا شد ."
     }
 
@@ -127,6 +151,7 @@ class SearchFragment : Fragment(), View.OnClickListener {
                 search()
                 Utils.closeKeyBoard(etSearch!!.windowToken, activity!!)
             }
+            R.id.fab_goUp -> rvSearch?.smoothScrollToPosition(0)
         }
     }
 }

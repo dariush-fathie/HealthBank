@@ -157,6 +157,7 @@
     @retrofit2.http.* <methods>;
 }
 
+-keep class pro.ahoora.zhin.healthbank.activitys.DetailActivity.**{ *; }
 # models rules
 -keep class pro.ahoora.zhin.healthbank.models.** { *; }
 -keep class pro.ahoora.zhin.healthbank.utils.** { *; }
@@ -165,6 +166,9 @@
 # don't process support library
 -keep class android.support.v7.** { *; }
 -keep interface android.support.v7.** { *; }
+
+
+-keep class com.google.maps.** { *; }
 
 #-keep public class * extends android.app.Activity
 #-keep public class * extends android.app.Application
@@ -191,3 +195,4 @@
   **[] $VALUES;
   public *;
 }
+

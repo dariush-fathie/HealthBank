@@ -24,6 +24,8 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
         <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:name=".activitys.MainActivity"
             android:windowSoftInputMode="adjustPan|adjustResize">
             <intent-filter>
@@ -32,8 +34,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activitys.HeaIncServiceActivity" />
         <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.HeaIncServiceActivity" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:name=".activitys.OfficeActivity"
             android:windowSoftInputMode="adjustPan|adjustResize" />
         <!--
@@ -48,13 +55,34 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".activitys.FavActivity" />
-        <activity android:name=".activitys.AboutUs" />
-        <activity android:name=".activitys.ContactUs" />
-        <activity android:name=".activitys.DetailActivity" />
-        <activity android:name=".activitys.SplashScreen" />
-        <activity android:name=".activitys.SearchActivity" />
-        <activity android:name=".activitys.LoginActivity"/>
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.FavActivity" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.AboutUs" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.ContactUs" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.DetailActivity" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.SplashScreen" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.SearchActivity" />
+        <activity
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:name=".activitys.LoginActivity"/>
     </application>
 
 </manifest>

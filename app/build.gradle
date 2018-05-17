@@ -13,7 +13,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 27
         versionCode 1
-        versionName "0.2-Beta1"
+        versionName "1.0"
         /*multiDexEnabled true*/
     }
     defaultConfig {
@@ -58,6 +58,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     implementation 'com.ryanjeffreybrooks:indefinitepagerindicator:1.0.8'
 }
-
 
 apply plugin: 'com.google.gms.google-services'

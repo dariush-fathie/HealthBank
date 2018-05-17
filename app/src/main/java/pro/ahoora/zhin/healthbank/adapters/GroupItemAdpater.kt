@@ -60,8 +60,9 @@ class GroupItemAdapter(ctx: Context, idList: ArrayList<Int>) : RecyclerView.Adap
             holder as ItemHolder
             val item = getModelByCenterId(ids[position])
             // todo use placeholders
-            holder.title.text = "${item?.firstName} ${item?.lastName}"
-            holder.subTitle.text = item?.specialityList!![0]?.name
+            holder.title.text = "${item.firstName} ${item?.lastName}"
+            holder.subTitle.text = item.specialityList!![0]?.name
+            holder.t.text = item.levelList!![0]?.name
 
             Glide.with(context)
                     .load(item.logoImg)

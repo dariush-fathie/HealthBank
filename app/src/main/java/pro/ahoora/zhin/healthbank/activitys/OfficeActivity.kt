@@ -16,15 +16,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import io.realm.Realm
 import io.realm.RealmResults
 import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_office.*
 import kotlinx.android.synthetic.main.bottom_sheet_layout.*
-import kotlinx.android.synthetic.main.detail_map.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -32,6 +28,7 @@ import pro.ahoora.zhin.healthbank.R
 import pro.ahoora.zhin.healthbank.adapters.GroupItemAdapter
 import pro.ahoora.zhin.healthbank.adapters.TAdapter
 import pro.ahoora.zhin.healthbank.customClasses.CustomBottomSheetBehavior
+import pro.ahoora.zhin.healthbank.customClasses.SimpleItemDecoration
 import pro.ahoora.zhin.healthbank.customClasses.TabLayoutInterface
 import pro.ahoora.zhin.healthbank.models.KotlinGroupModel
 import pro.ahoora.zhin.healthbank.models.KotlinItemModel
@@ -44,7 +41,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class OfficeActivity : AppCompatActivity(), View.OnClickListener{
+class OfficeActivity : AppCompatActivity(), View.OnClickListener {
 
 
     var groupId = 0
@@ -65,6 +62,10 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
             groupId = intent.getIntExtra(StaticValues.CATEGORY, 0)
         }
 
+        if (groupId != 1) {
+            hideFilter()
+        }
+
         tv_officeTitle.text = getTitleFromDb()
         ctbl.addTab(ctbl.newTab().setText("روی نقشه").setIcon(R.drawable.ic_map))
         ctbl.addTab(ctbl.newTab().setText("کاوش").setIcon(R.drawable.ic_search))
@@ -72,6 +73,11 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
         tabLayoutInterface = TabLayoutInterface(this, supportFragmentManager, bottomSheetBehavior, ll_progress)
         ctbl.addOnTabSelectedListener(tabLayoutInterface)
         getItems()
+    }
+
+    private fun hideFilter() {
+        view_divider.visibility = View.GONE
+        rl_filter.visibility = View.GONE
     }
 
     private fun getTitleFromDb(): String {
@@ -87,13 +93,40 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
         rl_filter.setOnClickListener(this)
         rl_sort.setOnClickListener(this)
         iv_goback.setOnClickListener(this)
+        fab_goUp.setOnClickListener(this)
     }
 
     private fun initList(list: ArrayList<Int>) {
         rv_items.layoutManager = LinearLayoutManager(this)
+        while (rv_items.itemDecorationCount > 0) {
+            rv_items.removeItemDecorationAt(0)
+        }
+        rv_items.clearOnScrollListeners()
+        rv_items.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val p = (recyclerView?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                flagScrollGoesDown = p > 8
+                controlFabVisibility()
+            }
+        })
+        val decor = SimpleItemDecoration(this, 10)
+        rv_items.addItemDecoration(decor)
         adapter = GroupItemAdapter(this, list)
         rv_items.adapter = adapter
         hideMainProgressLayout()
+    }
+
+    private fun controlFabVisibility() {
+        if (bottomSheetExpanded) {
+            fab_goUp.visibility = View.GONE
+        } else {
+            if (flagScrollGoesDown) {
+                fab_goUp.visibility = View.VISIBLE
+            } else {
+                fab_goUp.visibility = View.GONE
+            }
+        }
     }
 
     fun hideMainProgressLayout() {
@@ -169,7 +202,8 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
 
     }
 
-
+    var bottomSheetExpanded = false
+    var flagScrollGoesDown = false
 
     private fun getBottomSheetCallback(): BottomSheetBehavior.BottomSheetCallback {
         bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -179,19 +213,14 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> {
-                    }
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-
-                    }
-                    BottomSheetBehavior.STATE_COLLAPSED -> {
-                    }
-                    BottomSheetBehavior.STATE_DRAGGING -> {
-                    }
-                    BottomSheetBehavior.STATE_SETTLING -> {
+                bottomSheetExpanded = when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> true
+                    BottomSheetBehavior.STATE_COLLAPSED -> false
+                    else -> {
+                        true
                     }
                 }
+                controlFabVisibility()
             }
         }
         return bottomSheetCallback
@@ -281,6 +310,7 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
             R.id.rl_filter -> onFilterClick()
             R.id.rl_sort -> onSortClick()
             R.id.iv_goback -> finish()
+            R.id.fab_goUp -> rv_items.smoothScrollToPosition(0)
         }
     }
 
@@ -376,6 +406,5 @@ class OfficeActivity : AppCompatActivity(), View.OnClickListener{
             }
         }
     }
-
 
 }
